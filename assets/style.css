@@ -1,0 +1,89 @@
+*{
+    font-family: 'Kosugi';
+}
+body {
+    background: -webkit-linear-gradient(120deg,#192a56, #182C61, #273c75, #3B3B98, #6c5ce7, #7d5fff, #1B9CFC, #a29bfe, #D6A2E8, #fab1a0, #ff7675, #d63031, #ff3838);
+	background: -o-linear-gradient(120deg,#192a56, #182C61, #273c75, #3B3B98, #6c5ce7, #7d5fff, #1B9CFC, #a29bfe, #D6A2E8, #fab1a0, #ff7675, #d63031, #ff3838);
+	background: linear-gradient(210deg,#192a56, #182C61, #273c75, #3B3B98, #6c5ce7, #7d5fff, #1B9CFC, #a29bfe, #D6A2E8, #fab1a0, #ff7675, #d63031, #ff3838);
+	background-size: 2000% 4000%;
+	-webkit-animation: couleur 24s ease infinite;
+	-moz-animation: couleur 24s ease infinite;
+	animation: couleur 24s ease infinite;
+}
+#content
+{
+    margin-top:250px;
+    width:100%;
+    text-align: center;
+    color:white;
+}
+#response
+{
+    padding:6px;
+    font-size:18px;
+    border-radius: 3px;
+    border:none;
+    margin:10px 0 40px 0;
+    width:40%;
+    text-align:center;
+    outline:none;
+}
+h2
+{
+    margin-top:40px;
+}
+#submit-response
+{
+    border:none;
+    font-size:14px;
+    background:blue;
+    color:white;
+    padding:16px;
+    cursor:pointer;
+    margin:0 0 24px 0;
+}
+#button-ask-answer
+{
+    border:none;
+    font-size:14px;
+    background:teal;
+    color:white;
+    padding:16px;
+    cursor:pointer;
+    margin:0 0 24px 0;
+}
+a
+{
+    margin:16px;
+    background:white;
+    color:blue;
+}
+@-webkit-keyframes couleur {
+    0%,
+    100% {
+        background-position: 68% 0%
+    }
+    50% {
+        background-position: 33% 90%
+    }
+}
+
+@-moz-keyframes couleur {
+    0%,
+    100% {
+        background-position: 68% 0%
+    }
+    50% {
+        background-position: 33% 90%
+    }
+}
+
+@keyframes couleur {
+    0%,
+    100% {
+        background-position: 68% 10%
+    }
+    50% {
+        background-position: 33% 90%
+    }
+}

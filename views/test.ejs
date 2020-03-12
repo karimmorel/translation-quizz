@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Passer le test</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <script src="/jquery.js"></script>
+  
+  <meta name="author" content="Karim Morel - Développeur web" />
+  <meta name="copyright" content="Morel Karim" />
+  <meta name="creation_Date" content="12-02-2020" />
+
+  <link rel="stylesheet" href="/style.css" />
+  <link href="https://fonts.googleapis.com/css?family=Kosugi&display=swap" rel="stylesheet">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div id="content">
+<h1>Test de vocabulaire anglais</h1>
+<p> <%= arrRandomCount %> / <%= arrFullCount %> </p>
+
+<h2><%= wordtoguess %></h2>
+
+<div id="block-message"><%if (strGuess) { %>Wrong answer<% } %></div>
+
+<div id="block-add-word">
+    <form action="/response/<%= id %>/<%= language %>" method="get" class="form-add-translation" autocomplete="off"> 
+        <input type="text" name="response" id="response" value="<%= strGuess %>" autofocus>
+        <br/>
+        <input type="submit" id="submit-response">
+        <br/>
+    </form>
+    <button id="button-ask-answer">
+        Demander la réponse
+    </button>
+</div>
+
+<div id="response-value" style="display: none;"><%= response %></div>
+
+<a href="/">Configurer le test</a>
+<a href="/reboot/<%= language %>">Reboot le test</a>
+</div>
+</body>
+<script>
+    var socket = io('http://localhost:8080');
+    var id = <%= id %>;
+    var language = "<%= language %>";
+
+    $('#submit-response').click(function(){
+        socket.emit('submit-response', {response : $('#response').val(), id : id, language : language})
+    });
+    
+    $('#button-ask-answer').click(function(){
+        $('#response').val($('#response-value').html());
+    });
+
+</script>
+</html>
