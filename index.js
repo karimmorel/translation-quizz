@@ -1,6 +1,7 @@
 var express = require('express');
 var session = require('express-session');
 var mysql      = require('mysql');
+
 var connection = mysql.createConnection({
   host     : '127.0.0.1',
   user     : 'root',
@@ -25,36 +26,44 @@ app.use(express.static(__dirname + '/assets'));
 
 app.use(function (req, res, next) {
     // List of ids already responded
-    if (!req.session.respondedids) {
-        req.session.respondedids = [];
+    if (!session.respondedids) {
+        session.respondedids = [];
     }
     // Id of the actual word
-    if(!req.session.intActualId) {
-        req.session.intActualId = null;
+    if(!session.intActualId) {
+        session.intActualId = null;
     }
     // Response set by the guesser
-    if(!req.session.strActualGuess) {
-        req.session.strActualGuess = null;
+    if(!session.strActualGuess) {
+        session.strActualGuess = null;
     }
     next()
   })
 
-  function setIdToSession(boolAddId, req, res, strActualGuess) 
+  function setIdToSession(boolAddId, language, response, id, res) 
   {
+
+    if(res)
+      {
+        res.redirect('/test/'+language);
+      }
+
       if(boolAddId)
       {
-          req.session.respondedids.push(req.params.id);
-          req.session.intActualId = null;
-          req.session.strActualGuess = null;
+          session.respondedids.push(id);
+          session.intActualId = null;
+          session.strActualGuess = null;
+          return true;
       }
       else
       {
-          req.session.strActualGuess = strActualGuess;
+          session.strActualGuess = response;
+        return false;
       }
-      res.redirect('/test/'+req.params.language);
+
   }
 
-  function addIdToSessionOrNot(callback, language, response, id, req, res) { connection.query('SELECT * FROM translation WHERE id = '+id, function (error, results, fields) {
+  function addIdToSessionOrNot(callback, language, response, id, res) { connection.query('SELECT * FROM translation WHERE id = '+id, function (error, results, fields) {
     var boolAddId = false;
     if (error) throw error;
     if(language == 'en')
@@ -71,10 +80,17 @@ app.use(function (req, res, next) {
             boolAddId = true;
         }
     }
-    if(req && res)
-    {
-        callback(boolAddId, req, res, response);
-    }
+
+            var boolReturn = callback(boolAddId, language, response, id, res);
+            if(boolReturn == true)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+            
   });
 } 
 
@@ -115,8 +131,8 @@ app.get('/', function(req, res){
     let arrTranslationList = connection.query('SELECT * FROM translation', function (error, results, fields) {
         if (error) throw error;
 
-    var intActualId = req.session.intActualId;
-    var strActualGuess = req.session.strActualGuess;
+    var intActualId = session.intActualId;
+    var strActualGuess = session.strActualGuess;
 
     // Get a random word
     var arrRandomList = [];
@@ -125,7 +141,7 @@ app.get('/', function(req, res){
         if (intActualId == null)
         {
             var strResultId = results[key].id.toString();
-            var boolIfIncludes = req.session.respondedids.includes(strResultId)
+            var boolIfIncludes = session.respondedids.includes(strResultId)
             if(!boolIfIncludes)
             {
                 arrRandomList.push(results[key]);
@@ -145,11 +161,11 @@ app.get('/', function(req, res){
 
     // Compteur de mot côté vue
     var arrFullCount = results.length;
-    var arrRandomCount = req.session.respondedids.length;
+    var arrRandomCount = session.respondedids.length;
 
     if(arrWordToGuess)
     {
-        req.session.intActualId = arrWordToGuess.id;
+        session.intActualId = arrWordToGuess.id;
 
     // Render
     if (req.params.language == "en")
@@ -171,7 +187,7 @@ else
 
     if(req.query.response)
     {
-        addIdToSessionOrNot(setIdToSession, req.params.language, req.query.response, req.params.id, req, res);
+        addIdToSessionOrNot(setIdToSession, req.params.language, req.query.response, req.params.id, res);
     }
     else
     {
@@ -181,7 +197,7 @@ else
 })
 .get('/reboot/:language', function(req, res){
     res.setHeader('Content-Type', 'text/html');
-    req.session.respondedids = [];
+    session.respondedids = [];
 
     res.redirect('/test/'+req.params.language);
 })
@@ -198,8 +214,35 @@ var server = require('http').createServer(app);
 var io = require('socket.io').listen(server);
 
 io.on('connection', function (socket) {
-    socket.on('submit-response', function (data) {
+    socket.on('submit-answer', function (data) {
       console.log(data);
+
+        // Get data
+        var strLanguage = data.language;
+        var intId = data.id;
+        var strAnswer = data.answer;
+
+
+        var objReturnedData = {response : strAnswer, id : intId, language : strLanguage};
+
+
+        // If Good or Wrung Answer
+        var boolAnswer = addIdToSessionOrNot(setIdToSession, strLanguage, strAnswer, intId, null);
+
+
+        // J'EN SUIS À RENVOYER LES ÉVÉNEMENTS good-answer ET wrong-answer
+        // JE DOIS CRÉER UN CALLBACK POUR LES DÉCLENCHER CAR POUR LE MOMENT boolAnswser (l.230) EST TOUJOURS UNDEFINED
+        // JE DOIS DONC FAIRE UN CALLBACK POUR QUE CELUI-CI SOIT APPELÉ À LA FIN DE L'EXÉCUTION DE addIdToSessionOrNot()
+
+        console.log('JE RETOURNE CETTE VALEUR : '+boolAnswer);
+
+        if (boolAnswer) {
+            socket.emit('good-answer', objReturnedData);
+        }
+        else {
+            socket.emit('wrong-answer', objReturnedData);
+        }
+        
     });
   });
 

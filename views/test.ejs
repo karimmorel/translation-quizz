@@ -48,8 +48,18 @@
     var language = "<%= language %>";
 
     $('#submit-response').click(function(){
-        socket.emit('submit-response', {response : $('#response').val(), id : id, language : language})
+        socket.emit('submit-answer', {answer : $('#response').val(), id : id, language : language});
+        return false;
     });
+
+    socket.on('good-answer', function (data) {
+      console.log('oui');
+    });
+
+    socket.on('wrong-answer', function (data) {
+      console.log('non');
+    });
+
     
     $('#button-ask-answer').click(function(){
         $('#response').val($('#response-value').html());
