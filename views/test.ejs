@@ -72,10 +72,12 @@
         $('#response').val('');
         $('.count').html(count + ' / ' + totalCount);
         $('#response-value').html(strResponse);
+        $('#response').focus();
     });
 
     socket.on('wrong-answer', function () {
         $('#block-message').html('Wrong answer');
+        $('#response').focus();
       console.log('non');
     });
 

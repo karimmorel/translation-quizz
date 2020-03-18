@@ -50,9 +50,12 @@ app.use(function (req, res, next) {
 
       if(boolAddId)
       {
-          session.respondedids.push(id);
-          session.intActualId = null;
-          session.strActualGuess = null;
+          if(!session.respondedids.includes(id))
+          {
+            session.respondedids.push(id);
+            session.intActualId = null;
+            session.strActualGuess = null;
+          }
           return true;
       }
       else
@@ -111,12 +114,13 @@ function newWordToGuess (res, req, socket = null) {
 
     // Get a random word
     var arrRandomList = [];
+    console.log(session.respondedids);
     for (var key in results)
     {
         if (intActualId == null)
         {
-            var strResultId = results[key].id.toString();
-            var boolIfIncludes = session.respondedids.includes(strResultId)
+            var strResultId = results[key].id;
+            var boolIfIncludes = session.respondedids.includes(strResultId);
             if(!boolIfIncludes)
             {
                 arrRandomList.push(results[key]);
@@ -208,7 +212,7 @@ app.get('/', function(req, res){
 
     if(req.query.response)
     {
-        addIdToSessionOrNot(setIdToSession, req.params.language, req.query.response, req.params.id, res);
+        addIdToSessionOrNot(setIdToSession, req.params.language, req.query.response, parseInt(req.params.id), res);
     }
     else
     {
