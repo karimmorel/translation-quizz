@@ -18,7 +18,7 @@
 <body>
     <div id="content">
 <h1>Test de vocabulaire anglais</h1>
-<p> <%= arrRandomCount %> / <%= arrFullCount %> </p>
+<p class="count"> <%= arrRandomCount %> / <%= arrFullCount %> </p>
 
 <h2><%= wordtoguess %></h2>
 
@@ -49,14 +49,33 @@
 
     $('#submit-response').click(function(){
         socket.emit('submit-answer', {answer : $('#response').val(), id : id, language : language});
+        $('#block-message').html('');
         return false;
     });
 
     socket.on('good-answer', function (data) {
-      console.log('oui');
+        id = data.id;
+        count = data.count;
+        totalCount = data.total;
+
+        if (language == "en")
+        {
+            strWordToGuess = data.english;
+            strResponse = data.french;
+        }
+        else if (language == "fr"){
+        strWordToGuess = data.french;
+        strResponse = data.english
+        }
+
+        $('h2').html(strWordToGuess);
+        $('#response').val('');
+        $('.count').html(count + ' / ' + totalCount);
+        $('#response-value').html(strResponse);
     });
 
-    socket.on('wrong-answer', function (data) {
+    socket.on('wrong-answer', function () {
+        $('#block-message').html('Wrong answer');
       console.log('non');
     });
 

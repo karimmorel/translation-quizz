@@ -63,7 +63,7 @@ app.use(function (req, res, next) {
 
   }
 
-  function addIdToSessionOrNot(callback, language, response, id, res) { connection.query('SELECT * FROM translation WHERE id = '+id, function (error, results, fields) {
+  function addIdToSessionOrNot(callback, language, response, id, res, socket = null) { connection.query('SELECT * FROM translation WHERE id = '+id, function (error, results, fields) {
     var boolAddId = false;
     if (error) throw error;
     if(language == 'en')
@@ -82,52 +82,27 @@ app.use(function (req, res, next) {
     }
 
             var boolReturn = callback(boolAddId, language, response, id, res);
+
+            if(res == null)
+            {
             if(boolReturn == true)
             {
+                newWordToGuess(null, null, socket);
                 return true;
             }
             else
             {
+                socket.emit('wrong-answer');
                 return false;
             }
+        }
             
   });
 } 
 
 
-app.get('/', function(req, res){
-    let arrTranslationList = connection.query('SELECT * FROM translation', function (error, results, fields) {
-        if (error) throw error;
-        res.setHeader('Content-type', 'text/html');
-        res.render('index.ejs', {words : results});
-      });
-})
-.post('/', function(req, res){
 
-    var newFrenchWord = req.body.frenchword;
-    var newEnglishWord = req.body.englishword;
-
-    // Use MySQL
-    connection.query('INSERT INTO translation (english, french) VALUES (\''+newEnglishWord+'\', \''+newFrenchWord+'\')', function (error, results, fields) {
-        if (error) throw error;
-    });
-
-    // Redirection
-    res.redirect('/');
-})
-.get('/delete/:strKeyToDelete', function(req, res){
-    res.setHeader('Content-type', 'text/html');
-
-    let deleteQuery = connection.query('DELETE FROM translation WHERE id = '+req.params.strKeyToDelete, function (error, results, fields) {
-        if (error) throw error;
-    });
-
-    // Redirection
-    res.redirect('/');
-})
-.get('/test/:language', function(req, res){
-    res.setHeader('Content-type', 'text/html');
-
+function newWordToGuess (res, req, socket = null) {
     let arrTranslationList = connection.query('SELECT * FROM translation', function (error, results, fields) {
         if (error) throw error;
 
@@ -168,6 +143,8 @@ app.get('/', function(req, res){
         session.intActualId = arrWordToGuess.id;
 
     // Render
+    if(req && req)
+    {
     if (req.params.language == "en")
     {
         res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.english, response : arrWordToGuess.french, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess});
@@ -176,12 +153,56 @@ app.get('/', function(req, res){
     {
         res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.french, response : arrWordToGuess.english, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess});
     }
+    }
+    else
+    {
+        arrWordToGuess.total = arrFullCount;
+        arrWordToGuess.count = arrRandomCount;
+        socket.emit('good-answer', arrWordToGuess);
+    }
 }
 else
 {
     res.redirect('/end/'+req.params.language);
 }
 });  
+}
+
+
+app.get('/', function(req, res){
+    let arrTranslationList = connection.query('SELECT * FROM translation', function (error, results, fields) {
+        if (error) throw error;
+        res.setHeader('Content-type', 'text/html');
+        res.render('index.ejs', {words : results});
+      });
+})
+.post('/', function(req, res){
+
+    var newFrenchWord = req.body.frenchword;
+    var newEnglishWord = req.body.englishword;
+
+    // Use MySQL
+    connection.query('INSERT INTO translation (english, french) VALUES (\''+newEnglishWord+'\', \''+newFrenchWord+'\')', function (error, results, fields) {
+        if (error) throw error;
+    });
+
+    // Redirection
+    res.redirect('/');
+})
+.get('/delete/:strKeyToDelete', function(req, res){
+    res.setHeader('Content-type', 'text/html');
+
+    let deleteQuery = connection.query('DELETE FROM translation WHERE id = '+req.params.strKeyToDelete, function (error, results, fields) {
+        if (error) throw error;
+    });
+
+    // Redirection
+    res.redirect('/');
+})
+.get('/test/:language', function(req, res){
+    res.setHeader('Content-type', 'text/html');
+
+    newWordToGuess (res, req);
 })
 .get('/response/:id/:language', function(req, res){
 
@@ -215,34 +236,15 @@ var io = require('socket.io').listen(server);
 
 io.on('connection', function (socket) {
     socket.on('submit-answer', function (data) {
-      console.log(data);
 
         // Get data
         var strLanguage = data.language;
         var intId = data.id;
         var strAnswer = data.answer;
 
-
-        var objReturnedData = {response : strAnswer, id : intId, language : strLanguage};
-
-
         // If Good or Wrung Answer
-        var boolAnswer = addIdToSessionOrNot(setIdToSession, strLanguage, strAnswer, intId, null);
+        var boolAnswer = addIdToSessionOrNot(setIdToSession, strLanguage, strAnswer, intId, null, socket);
 
-
-        // J'EN SUIS À RENVOYER LES ÉVÉNEMENTS good-answer ET wrong-answer
-        // JE DOIS CRÉER UN CALLBACK POUR LES DÉCLENCHER CAR POUR LE MOMENT boolAnswser (l.230) EST TOUJOURS UNDEFINED
-        // JE DOIS DONC FAIRE UN CALLBACK POUR QUE CELUI-CI SOIT APPELÉ À LA FIN DE L'EXÉCUTION DE addIdToSessionOrNot()
-
-        console.log('JE RETOURNE CETTE VALEUR : '+boolAnswer);
-
-        if (boolAnswer) {
-            socket.emit('good-answer', objReturnedData);
-        }
-        else {
-            socket.emit('wrong-answer', objReturnedData);
-        }
-        
     });
   });
 
