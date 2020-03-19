@@ -40,7 +40,11 @@
 <div id="response-value" style="display: none;"><%= response %></div>
 
 <a href="/">Configurer le test</a>
-<a href="/reboot/<%= language %>">Reboot le test</a>
+<%if (limited == true) { %>
+    <a href="/reboot/<%= language %>/<%= numberofwords %>">Reboot le test</a>
+    <% } else { %>
+        <a href="/reboot/<%= language %>">Reboot le test</a>
+        <% } %>
 </div>
 </body>
 <script>
@@ -49,7 +53,11 @@
     var language = "<%= language %>";
 
     $('#submit-response').click(function(){
+        <%if (limited == true) { %>
+        socket.emit('submit-answer-limited', {answer : $('#response').val(), id : id, language : language, boolanswerasked : $('#answer-asked').is(":checked"), numberofwords : <%= numberofwords %>});
+        <% } else { %>
         socket.emit('submit-answer', {answer : $('#response').val(), id : id, language : language, boolanswerasked : $('#answer-asked').is(":checked")});
+            <% } %>
         $('#block-message').html('');
         return false;
     });
