@@ -71,14 +71,14 @@ app.use(function (req, res, next) {
     if (error) throw error;
     if(language == 'en')
     {
-        if(results[0].french == response)
+        if(results[0].french.toLowerCase() == response.toLowerCase())
         {
             boolAddId = true;
         }
     }
     else if(language == 'fr')
     {
-        if(results[0].english == response)
+        if(results[0].english.toLowerCase() == response.toLowerCase())
         {
             boolAddId = true;
         }
@@ -114,7 +114,6 @@ function newWordToGuess (res, req, socket = null) {
 
     // Get a random word
     var arrRandomList = [];
-    console.log(session.respondedids);
     for (var key in results)
     {
         if (intActualId == null)
@@ -147,7 +146,7 @@ function newWordToGuess (res, req, socket = null) {
         session.intActualId = arrWordToGuess.id;
 
     // Render
-    if(req && req)
+    if(res && req)
     {
     if (req.params.language == "en")
     {
@@ -167,7 +166,14 @@ function newWordToGuess (res, req, socket = null) {
 }
 else
 {
-    res.redirect('/end/'+req.params.language);
+    if(res && req)
+    {
+        res.redirect('/end/'+req.params.language);
+    }
+    else
+    {
+        socket.emit('end-of-the-quizz');
+    }
 }
 });  
 }

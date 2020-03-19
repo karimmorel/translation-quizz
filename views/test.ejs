@@ -81,6 +81,13 @@
       console.log('non');
     });
 
+    socket.on('end-of-the-quizz', function () {
+        $('h2').html('Fin de la partie')
+        $('#response').hide();
+        $('.count').hide();
+        $('#submit-response').hide();
+        $('#button-ask-answer').hide();
+    });
     
     $('#button-ask-answer').click(function(){
         $('#response').val($('#response-value').html());
