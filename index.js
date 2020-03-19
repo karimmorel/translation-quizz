@@ -40,7 +40,7 @@ app.use(function (req, res, next) {
     next()
   })
 
-  function setIdToSession(boolAddId, language, response, id, res) 
+  function setIdToSession(boolAddId, language, response, id, boolAnswerAsked, res) 
   {
 
     if(res)
@@ -52,6 +52,14 @@ app.use(function (req, res, next) {
       {
           if(!session.respondedids.includes(id))
           {
+              if(!boolAnswerAsked)
+              {
+                //If the user does not click in the "Ask the answer" button -->  Update number of good answer for this word
+                connection.query('UPDATE translation SET answered = answered + 1 WHERE id = '+id, function (error, results, fields) {
+                    if (error) throw error;
+                });
+              }
+            
             session.respondedids.push(id);
             session.intActualId = null;
             session.strActualGuess = null;
@@ -66,7 +74,7 @@ app.use(function (req, res, next) {
 
   }
 
-  function addIdToSessionOrNot(callback, language, response, id, res, socket = null) { connection.query('SELECT * FROM translation WHERE id = '+id, function (error, results, fields) {
+  function addIdToSessionOrNot(callback, language, response, id, boolAnswerAsked, res, socket = null) { connection.query('SELECT * FROM translation WHERE id = '+id, function (error, results, fields) {
     var boolAddId = false;
     if (error) throw error;
     if(language == 'en')
@@ -84,7 +92,7 @@ app.use(function (req, res, next) {
         }
     }
 
-            var boolReturn = callback(boolAddId, language, response, id, res);
+            var boolReturn = callback(boolAddId, language, response, id, boolAnswerAsked, res);
 
             if(res == null)
             {
@@ -218,7 +226,7 @@ app.get('/', function(req, res){
 
     if(req.query.response)
     {
-        addIdToSessionOrNot(setIdToSession, req.params.language, req.query.response, parseInt(req.params.id), res);
+        addIdToSessionOrNot(setIdToSession, req.params.language, req.query.response, parseInt(req.params.id), req.query.answerasked, res);
     }
     else
     {
@@ -251,9 +259,10 @@ io.on('connection', function (socket) {
         var strLanguage = data.language;
         var intId = data.id;
         var strAnswer = data.answer;
+        var boolAnswerAsked = data.boolanswerasked;
 
-        // If Good or Wrung Answer
-        var boolAnswer = addIdToSessionOrNot(setIdToSession, strLanguage, strAnswer, intId, null, socket);
+        // Process with the answer sent
+        addIdToSessionOrNot(setIdToSession, strLanguage, strAnswer, intId, boolAnswerAsked, null, socket);
 
     });
   });
