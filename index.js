@@ -396,9 +396,9 @@ app.get('/', function(req, res){
     res.setHeader('Content-Type', 'text/html');
     res.render('end.ejs', {language : req.params.language});
 })
-.get('/end/:language/numberofwords', function(req, res){
+.get('/end/:language/:numberofwords', function(req, res){
     res.setHeader('Content-Type', 'text/html');
-    res.render('end.ejs', {language : req.params.language, numberofwords : numberofwords});
+    res.render('end.ejs', {language : req.params.language, numberofwords : req.params.numberofwords});
 })
 .use(function(req, res, next){
     res.setHeader('Content-Type', 'text/html');
