@@ -78,8 +78,15 @@ app.use(function (req, res, next) {
           {
               if(!boolAnswerAsked)
               {
-                //If the user does not click in the "Ask the answer" button -->  Update number of good answer for this word
+                //If the user does not click on the "Ask the answer" button -->  Update number of good answer for this word
                 connection.query('UPDATE translation SET answered = answered + 1 WHERE id = '+id, function (error, results, fields) {
+                    if (error) throw error;
+                });
+              }
+              else
+              {
+                  //If the user click on the "Ask the answer" button -->  Update number of failed answer for this word
+                connection.query('UPDATE translation SET failed = failed + 1 WHERE id = '+id, function (error, results, fields) {
                     if (error) throw error;
                 });
               }
@@ -235,7 +242,7 @@ else
 
 
 function newWordToGuessWithLimitedAmount (res, req, numberofwords, socket = null) {
-    let arrTranslationList = connection.query('SELECT * FROM translation ORDER BY answered ASC LIMIT '+numberofwords, function (error, results, fields) {
+    let arrTranslationList = connection.query('SELECT * FROM translation ORDER BY answered ASC, failed DESC LIMIT '+numberofwords, function (error, results, fields) {
         if (error) throw error;
 
     var intActualId = session.intActualIdLimited;
