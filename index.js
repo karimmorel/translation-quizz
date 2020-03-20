@@ -51,6 +51,9 @@ app.use(function (req, res, next) {
     if(!session.wordsToGuessLimited) {
         session.wordsToGuessLimited = [];
     }
+    if(!session.numberofwordsLimited) {
+        session.numberofwordsLimited = null;
+    }
 
 
     next()
@@ -242,13 +245,25 @@ else
 
 
 function newWordToGuessWithLimitedAmount (res, req, numberofwords, socket = null) {
-    let arrTranslationList = connection.query('SELECT * FROM translation ORDER BY answered ASC, failed DESC LIMIT '+numberofwords, function (error, results, fields) {
+    connection.query('SELECT * FROM translation ORDER BY answered ASC, failed DESC LIMIT '+numberofwords, function (error, results, fields) {
         if (error) throw error;
 
     var intActualId = session.intActualIdLimited;
     var strActualGuess = session.strActualGuessLimited;
     var wordsToGuess = session.wordsToGuessLimited;
     var respondedids = session.respondedidsLimited;
+    var sessionNumberofwords = session.numberofwordsLimited;
+
+    if(sessionNumberofwords == null)
+    {
+        session.numberofwordsLimited = numberofwords;
+    }
+    else if(sessionNumberofwords != numberofwords)
+    {
+        res.redirect('/reboot/'+req.params.language+'/'+numberofwords);
+        session.numberofwordsLimited = null;
+        return;
+    }
 
     if(!wordsToGuess.length > 0)
     {
