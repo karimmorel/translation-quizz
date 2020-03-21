@@ -350,8 +350,8 @@ app.get('/', function(req, res){
 })
 .post('/', function(req, res){
 
-    var newFrenchWord = req.body.frenchword;
-    var newEnglishWord = req.body.englishword;
+    var newFrenchWord = req.body.frenchword.replace(/'/g, "\\'");
+    var newEnglishWord = req.body.englishword.replace(/'/g, "\\'");
 
     // Use MySQL
     connection.query('INSERT INTO translation (english, french) VALUES (\''+newEnglishWord+'\', \''+newFrenchWord+'\')', function (error, results, fields) {
