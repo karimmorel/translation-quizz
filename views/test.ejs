@@ -17,6 +17,10 @@
 </head>
 <body>
     <div id="content">
+        <div id="count-answers">
+            <p id="count-correct-answers">Correct : <%= intCorrectAnswers %></p>
+            <p id="count-wrong-answers">Wrong : <%= intWrongAnswers %></p>
+        </div>
 <h1>Test de vocabulaire anglais</h1>
 <p class="count"> <%= arrRandomCount %> / <%= arrFullCount %> </p>
 
@@ -79,6 +83,11 @@
         strResponse = data.english
         }
 
+        // Answers Count Update
+        $('#count-correct-answers').html('Correct : '+data.intCorrectAnswers)
+        $('#count-wrong-answers').html('Wrong : '+data.intWrongAnswers)
+
+        // Html Update
         $('h2').html(strWordToGuess);
         $('#response').val('');
         $('.count').html(count + ' / ' + totalCount);

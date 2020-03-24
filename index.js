@@ -37,6 +37,12 @@ app.use(function (req, res, next) {
     if(!session.strActualGuess) {
         session.strActualGuess = null;
     }
+    if(!session.intCorrectAnswers) {
+        session.intCorrectAnswers = 0;
+    }
+    if(!session.intWrongAnswers) {
+        session.intWrongAnswers = 0;
+    }
 
     // Variables for the quizz with limited amout of words
     if(!session.strActualGuessLimited) {
@@ -53,6 +59,12 @@ app.use(function (req, res, next) {
     }
     if(!session.numberofwordsLimited) {
         session.numberofwordsLimited = null;
+    }
+    if(!session.intCorrectAnswersLimited) {
+        session.intCorrectAnswersLimited = 0;
+    }
+    if(!session.intWrongAnswersLimited) {
+        session.intWrongAnswersLimited = 0;
     }
 
 
@@ -84,6 +96,14 @@ app.use(function (req, res, next) {
                 //If the user does not click on the "Ask the answer" button -->  Update number of good answer for this word
                 connection.query('UPDATE translation SET answered = answered + 1 WHERE id = '+id, function (error, results, fields) {
                     if (error) throw error;
+                    if(boolLimited == false)
+                    {
+                        session.intCorrectAnswers = session.intCorrectAnswers + 1;
+                    }
+                    else
+                    {
+                        session.intCorrectAnswersLimited = session.intCorrectAnswersLimited + 1;
+                    }
                 });
               }
               else
@@ -91,6 +111,14 @@ app.use(function (req, res, next) {
                   //If the user click on the "Ask the answer" button -->  Update number of failed answer for this word
                 connection.query('UPDATE translation SET failed = failed + 1 WHERE id = '+id, function (error, results, fields) {
                     if (error) throw error;
+                    if(boolLimited == false)
+                    {
+                        session.intWrongAnswers = session.intWrongAnswers + 1;
+                    }
+                    else
+                    {
+                        session.intWrongAnswersLimited = session.intWrongAnswersLimited + 1;
+                    }
                 });
               }
             
@@ -205,6 +233,7 @@ function newWordToGuess (res, req, socket = null) {
     // Compteur de mot côté vue
     var arrFullCount = results.length;
     var arrRandomCount = session.respondedids.length;
+    console.log(session.intCorrectAnswers);
 
     if(arrWordToGuess)
     {
@@ -215,17 +244,19 @@ function newWordToGuess (res, req, socket = null) {
     {
     if (req.params.language == "en")
     {
-        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.english, response : arrWordToGuess.french, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : false});
+        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.english, response : arrWordToGuess.french, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : false, intCorrectAnswers : session.intCorrectAnswers, intWrongAnswers : session.intWrongAnswers});
     }
     else if (req.params.language == "fr")
     {
-        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.french, response : arrWordToGuess.english, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : false});
+        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.french, response : arrWordToGuess.english, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : false, intCorrectAnswers : session.intCorrectAnswers, intWrongAnswers : session.intWrongAnswers});
     }
     }
     else
     {
         arrWordToGuess.total = arrFullCount;
         arrWordToGuess.count = arrRandomCount;
+        arrWordToGuess.intCorrectAnswers = session.intCorrectAnswers;
+        arrWordToGuess.intWrongAnswers = session.intWrongAnswers;
         socket.emit('good-answer', arrWordToGuess);
     }
 }
@@ -312,17 +343,19 @@ function newWordToGuessWithLimitedAmount (res, req, numberofwords, socket = null
     {
     if (req.params.language == "en")
     {
-        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.english, response : arrWordToGuess.french, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : true, numberofwords : numberofwords});
+        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.english, response : arrWordToGuess.french, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : true, numberofwords : numberofwords, intCorrectAnswers : session.intCorrectAnswersLimited, intWrongAnswers : session.intWrongAnswersLimited});
     }
     else if (req.params.language == "fr")
     {
-        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.french, response : arrWordToGuess.english, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : true, numberofwords : numberofwords});
+        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.french, response : arrWordToGuess.english, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : true, numberofwords : numberofwords, intCorrectAnswers : session.intCorrectAnswersLimited, intWrongAnswers : session.intWrongAnswersLimited});
     }
     }
     else
     {
         arrWordToGuess.total = arrFullCount;
         arrWordToGuess.count = arrRandomCount;
+        arrWordToGuess.intCorrectAnswers = session.intCorrectAnswersLimited;
+        arrWordToGuess.intWrongAnswers = session.intWrongAnswersLimited;
         socket.emit('good-answer', arrWordToGuess);
     }
 }
@@ -402,6 +435,8 @@ app.get('/', function(req, res){
 .get('/reboot/:language', function(req, res){
     res.setHeader('Content-Type', 'text/html');
     session.respondedids = [];
+    session.intCorrectAnswers = 0;
+    session.intWrongAnswers = 0;
 
     res.redirect('/test/'+req.params.language);
 })
@@ -411,6 +446,8 @@ app.get('/', function(req, res){
     session.wordsToGuessLimited = [];
     session.intActualIdLimited = null;
     session.strActualGuessLimited = null;
+    session.intCorrectAnswersLimited = 0;
+    session.intWrongAnswersLimited = 0;
 
     res.redirect('/test/'+req.params.language+'/'+req.params.numberofwords);
 })

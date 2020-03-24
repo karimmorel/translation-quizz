@@ -58,6 +58,24 @@ a
     background:white;
     color:blue;
 }
+#count-answers
+{
+    position:absolute;
+    right:0;
+    top:0;
+    padding-right:24px;
+    text-align:left;
+    text-transform: uppercase;
+    font-weight: bolder;
+}
+#count-correct-answers
+{
+    color:greenyellow;
+}
+#count-wrong-answers
+{
+    color:red;
+}
 @-webkit-keyframes couleur {
     0%,
     100% {
