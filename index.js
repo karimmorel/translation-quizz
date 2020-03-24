@@ -233,7 +233,6 @@ function newWordToGuess (res, req, socket = null) {
     // Compteur de mot côté vue
     var arrFullCount = results.length;
     var arrRandomCount = session.respondedids.length;
-    console.log(session.intCorrectAnswers);
 
     if(arrWordToGuess)
     {
