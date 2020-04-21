@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Construire le test</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <script
+  src="https://code.jquery.com/jquery-3.4.1.js"
+  integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+  crossorigin="anonymous"></script>
+
+  <meta name="author" content="Karim Morel - Développeur web" />
+  <meta name="copyright" content="Morel Karim" />
+  <meta name="creation_Date" content="12-02-2020" />
+
+</head>
+<body>
+<h1>List of languages</h1>
+
+<div id="word-list">
+    <ul>
+        <% for(var key in languages) { %>
+            <li>
+            <%= languages[key].name %> : <%= languages[key].slug %> <a href="/language/delete/<%= languages[key].id %>">delete</a>
+            </li>
+            <% } %>
+    </ul>
+</div>
+
+<div id="block-add-word">
+    <form action="/languages" method="post" class="form-add-translation"> 
+        <label id="title-english-word">Language's name</label>
+        <input type="text" name="name" id="english-word" autofocus>
+        <br/>
+        <label id="title-french-word">Language's slug</label>
+        <input type="text" name="slug" id="french-word">
+        <br/>
+        <input type="submit" id="submit-words">
+    </form>
+</div>
+
+<a href="/test/fr">Passer le test Français</a><br/>
+<a href="/test/en">Passer le test Anglais</a>
+
+</body>
+</html>

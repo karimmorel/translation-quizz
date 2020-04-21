@@ -393,6 +393,36 @@ app.get('/', function(req, res){
     // Redirection
     res.redirect('/');
 })
+app.get('/languages', function(req, res){
+    let arrTranslationList = connection.query('SELECT * FROM language', function (error, results, fields) {
+        if (error) throw error;
+        res.setHeader('Content-type', 'text/html');
+        res.render('language.ejs', {languages : results});
+      });
+})
+.post('/languages', function(req, res){
+
+    var strName = req.body.name.replace(/'/g, "\\'");
+    var strSlug = req.body.slug.replace(/'/g, "\\'");
+
+    // Use MySQL
+    connection.query('INSERT INTO language (name, slug) VALUES (\''+strName+'\', \''+strSlug+'\')', function (error, results, fields) {
+        if (error) throw error;
+    });
+
+    // Redirection
+    res.redirect('/languages');
+})
+.get('/language/delete/:strKeyToDelete', function(req, res){
+    res.setHeader('Content-type', 'text/html');
+
+    let deleteQuery = connection.query('DELETE FROM language WHERE id = '+req.params.strKeyToDelete, function (error, results, fields) {
+        if (error) throw error;
+    });
+
+    // Redirection
+    res.redirect('/languages');
+})
 .get('/delete/:strKeyToDelete', function(req, res){
     res.setHeader('Content-type', 'text/html');
 
