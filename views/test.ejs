@@ -75,12 +75,12 @@
 
         if (language == "en")
         {
-            strWordToGuess = data.english;
-            strResponse = data.french;
+            strWordToGuess = data.focused_language_translation;
+            strResponse = data.main_language_translation;
         }
         else if (language == "fr"){
-        strWordToGuess = data.french;
-        strResponse = data.english
+        strWordToGuess = data.main_language_translation;
+        strResponse = data.focused_language_translation
         }
 
         // Answers Count Update

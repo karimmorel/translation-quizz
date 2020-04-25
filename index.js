@@ -159,14 +159,14 @@ app.use(function (req, res, next) {
     if (error) throw error;
     if(language == 'en')
     {
-        if(results[0].french.toLowerCase() == response.toLowerCase())
+        if(results[0].main_language_translation.toLowerCase() == response.toLowerCase())
         {
             boolAddId = true;
         }
     }
     else if(language == 'fr')
     {
-        if(results[0].english.toLowerCase() == response.toLowerCase())
+        if(results[0].focused_language_translation.toLowerCase() == response.toLowerCase())
         {
             boolAddId = true;
         }
@@ -243,11 +243,11 @@ function newWordToGuess (res, req, socket = null) {
     {
     if (req.params.language == "en")
     {
-        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.english, response : arrWordToGuess.french, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : false, intCorrectAnswers : session.intCorrectAnswers, intWrongAnswers : session.intWrongAnswers});
+        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.focused_language_translation, response : arrWordToGuess.main_language_translation, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : false, intCorrectAnswers : session.intCorrectAnswers, intWrongAnswers : session.intWrongAnswers});
     }
     else if (req.params.language == "fr")
     {
-        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.french, response : arrWordToGuess.english, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : false, intCorrectAnswers : session.intCorrectAnswers, intWrongAnswers : session.intWrongAnswers});
+        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.main_language_translation, response : arrWordToGuess.focused_language_translation, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : false, intCorrectAnswers : session.intCorrectAnswers, intWrongAnswers : session.intWrongAnswers});
     }
     }
     else
@@ -342,11 +342,11 @@ function newWordToGuessWithLimitedAmount (res, req, numberofwords, socket = null
     {
     if (req.params.language == "en")
     {
-        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.english, response : arrWordToGuess.french, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : true, numberofwords : numberofwords, intCorrectAnswers : session.intCorrectAnswersLimited, intWrongAnswers : session.intWrongAnswersLimited});
+        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.focused_language_translation, response : arrWordToGuess.main_language_translation, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : true, numberofwords : numberofwords, intCorrectAnswers : session.intCorrectAnswersLimited, intWrongAnswers : session.intWrongAnswersLimited});
     }
     else if (req.params.language == "fr")
     {
-        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.french, response : arrWordToGuess.english, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : true, numberofwords : numberofwords, intCorrectAnswers : session.intCorrectAnswersLimited, intWrongAnswers : session.intWrongAnswersLimited});
+        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.main_language_translation, response : arrWordToGuess.focused_language_translation, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : true, numberofwords : numberofwords, intCorrectAnswers : session.intCorrectAnswersLimited, intWrongAnswers : session.intWrongAnswersLimited});
     }
     }
     else
@@ -386,7 +386,7 @@ app.get('/', function(req, res){
     var newEnglishWord = req.body.englishword.replace(/'/g, "\\'");
 
     // Use MySQL
-    connection.query('INSERT INTO translation (english, french) VALUES (\''+newEnglishWord+'\', \''+newFrenchWord+'\')', function (error, results, fields) {
+    connection.query('INSERT INTO translation (focused_language_translation, main_language_translation) VALUES (\''+newEnglishWord+'\', \''+newFrenchWord+'\')', function (error, results, fields) {
         if (error) throw error;
     });
 
