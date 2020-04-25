@@ -369,7 +369,7 @@ else
 
 app.get('/:language', function(req, res){
 
-    let arrTranslationList = connection.query('SELECT * FROM translation INNER JOIN language ON translation.language_id = language.id WHERE translation.language_id = (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1)', function (error, results, fields) {
+    let arrTranslationList = connection.query('SELECT translation.*, language.name, language.slug FROM translation INNER JOIN language ON translation.language_id = language.id WHERE translation.language_id = (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1)', function (error, results, fields) {
         if (error) throw error;
         res.setHeader('Content-type', 'text/html');
         res.render('index.ejs', {words : results, language : req.params.language});
