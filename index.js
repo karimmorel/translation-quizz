@@ -367,25 +367,25 @@ else
 }
 
 
-app.get('/', function(req, res){
-    let arrTranslationList = connection.query('SELECT * FROM translation', function (error, results, fields) {
+app.get('/:language', function(req, res){
+    let arrTranslationList = connection.query('SELECT * FROM translation WHERE language_id = (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1)', function (error, results, fields) {
         if (error) throw error;
         res.setHeader('Content-type', 'text/html');
-        res.render('index.ejs', {words : results});
+        res.render('index.ejs', {words : results, language : req.params.language});
       });
 })
-.post('/', function(req, res){
+.post('/:language', function(req, res){
 
     var newFrenchWord = req.body.frenchword.replace(/'/g, "\\'");
     var newEnglishWord = req.body.englishword.replace(/'/g, "\\'");
 
     // Use MySQL
-    connection.query('INSERT INTO translation (focused_language_translation, main_language_translation) VALUES (\''+newEnglishWord+'\', \''+newFrenchWord+'\')', function (error, results, fields) {
+    connection.query('INSERT INTO translation (focused_language_translation, main_language_translation, language_id) VALUES (\''+newEnglishWord+'\', \''+newFrenchWord+'\', (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1))', function (error, results, fields) {
         if (error) throw error;
     });
 
     // Redirection
-    res.redirect('/');
+    res.redirect('/'+req.params.language);
 })
 app.get('/languages', function(req, res){
     let arrTranslationList = connection.query('SELECT * FROM language', function (error, results, fields) {
@@ -417,7 +417,7 @@ app.get('/languages', function(req, res){
     // Redirection
     res.redirect('/languages');
 })
-.get('/delete/:strKeyToDelete', function(req, res){
+.get('/delete/:language/:strKeyToDelete', function(req, res){
     res.setHeader('Content-type', 'text/html');
 
     let deleteQuery = connection.query('DELETE FROM translation WHERE id = '+req.params.strKeyToDelete, function (error, results, fields) {
@@ -425,7 +425,7 @@ app.get('/languages', function(req, res){
     });
 
     // Redirection
-    res.redirect('/');
+    res.redirect('/'+req.params.language);
 })
 .get('/test/:language', function(req, res){
     res.setHeader('Content-type', 'text/html');

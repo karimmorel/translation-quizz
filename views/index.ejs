@@ -22,14 +22,14 @@
     <ul>
         <% for(var key in words) { %>
             <li>
-            <%= words[key].focused_language_translation %> : <%= words[key].main_language_translation %> <a href="/delete/<%= words[key].id %>">delete</a>
+            <%= words[key].focused_language_translation %> : <%= words[key].main_language_translation %> <a href="/delete/<%= language %>/<%= words[key].id %>">delete</a>
             </li>
             <% } %>
     </ul>
 </div>
 
 <div id="block-add-word">
-    <form action="/" method="post" class="form-add-translation"> 
+    <form action="/<%= language %>" method="post" class="form-add-translation"> 
         <label id="title-english-word">Mot en anglais</label>
         <input type="text" name="englishword" id="english-word" autofocus>
         <br/>
@@ -40,8 +40,7 @@
     </form>
 </div>
 
-<a href="/test/fr">Passer le test Français</a><br/>
-<a href="/test/en">Passer le test Anglais</a>
+<a href="/test/<%= language %>">Passer le test Anglais</a>
 
 </body>
 </html>
