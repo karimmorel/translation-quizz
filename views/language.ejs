@@ -22,7 +22,7 @@
     <ul>
         <% for(var key in languages) { %>
             <li>
-            <%= languages[key].name %> : <%= languages[key].slug %> <a href="/language/delete/<%= languages[key].id %>">delete</a>
+            <a href="/<%= languages[key].slug %>"><%= languages[key].name %></a> : <%= languages[key].slug %> <%if (languages[key].main_language == false) { %><a href="/language/delete/<%= languages[key].id %>">delete</a><% } %>
             </li>
             <% } %>
     </ul>
@@ -39,9 +39,6 @@
         <input type="submit" id="submit-words">
     </form>
 </div>
-
-<a href="/test/fr">Passer le test Français</a><br/>
-<a href="/test/en">Passer le test Anglais</a>
 
 </body>
 </html>

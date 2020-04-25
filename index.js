@@ -367,7 +367,27 @@ else
 }
 
 
-app.get('/:language', function(req, res){
+app.get('/languages', function(req, res){
+    let arrTranslationList = connection.query('SELECT * FROM language ORDER BY main_language DESC', function (error, results, fields) {
+        if (error) throw error;
+        res.setHeader('Content-type', 'text/html');
+        res.render('language.ejs', {languages : results});
+      });
+})
+.post('/languages', function(req, res){
+
+    var strName = req.body.name.replace(/'/g, "\\'");
+    var strSlug = req.body.slug.replace(/'/g, "\\'");
+
+    // Use MySQL
+    connection.query('INSERT INTO language (name, slug) VALUES (\''+strName+'\', \''+strSlug+'\')', function (error, results, fields) {
+        if (error) throw error;
+    });
+
+    // Redirection
+    res.redirect('/languages');
+})
+.get('/:language', function(req, res){
 
     let arrTranslationList = connection.query('SELECT translation.*, language.name, language.slug FROM translation INNER JOIN language ON translation.language_id = language.id WHERE translation.language_id = (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1)', function (error, results, fields) {
         if (error) throw error;
@@ -387,26 +407,6 @@ app.get('/:language', function(req, res){
 
     // Redirection
     res.redirect('/'+req.params.language);
-})
-app.get('/languages', function(req, res){
-    let arrTranslationList = connection.query('SELECT * FROM language', function (error, results, fields) {
-        if (error) throw error;
-        res.setHeader('Content-type', 'text/html');
-        res.render('language.ejs', {languages : results});
-      });
-})
-.post('/languages', function(req, res){
-
-    var strName = req.body.name.replace(/'/g, "\\'");
-    var strSlug = req.body.slug.replace(/'/g, "\\'");
-
-    // Use MySQL
-    connection.query('INSERT INTO language (name, slug) VALUES (\''+strName+'\', \''+strSlug+'\')', function (error, results, fields) {
-        if (error) throw error;
-    });
-
-    // Redirection
-    res.redirect('/languages');
 })
 .get('/language/delete/:strKeyToDelete', function(req, res){
     res.setHeader('Content-type', 'text/html');
