@@ -180,11 +180,11 @@ app.use(function (req, res, next) {
             {
                 if(boolLimited == true)
                 {
-                    newWordToGuessWithLimitedAmount(null, null, numberofwords, socket);
+                    newWordToGuessWithLimitedAmount(null, null, numberofwords, socket, language);
                 }
                 else
                 {
-                    newWordToGuess(null, null, socket);
+                    newWordToGuess(null, null, socket, language);
                 }
             }
             else
@@ -198,8 +198,8 @@ app.use(function (req, res, next) {
 
 
 
-function newWordToGuess (res, req, socket = null) {
-    let arrTranslationList = connection.query('SELECT * FROM translation', function (error, results, fields) {
+function newWordToGuess (res, req, socket = null, language = null) {
+    let arrTranslationList = connection.query('SELECT * FROM translation WHERE language_id = (SELECT id FROM language WHERE slug = \''+language+'\' LIMIT 1)', function (error, results, fields) {
         if (error) throw error;
 
     var intActualId = session.intActualId;
@@ -241,14 +241,8 @@ function newWordToGuess (res, req, socket = null) {
     // Render
     if(res && req)
     {
-    if (req.params.language == "en")
-    {
         res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.focused_language_translation, response : arrWordToGuess.main_language_translation, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : false, intCorrectAnswers : session.intCorrectAnswers, intWrongAnswers : session.intWrongAnswers});
-    }
-    else if (req.params.language == "fr")
-    {
-        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.main_language_translation, response : arrWordToGuess.focused_language_translation, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : false, intCorrectAnswers : session.intCorrectAnswers, intWrongAnswers : session.intWrongAnswers});
-    }
+
     }
     else
     {
@@ -274,8 +268,8 @@ else
 }
 
 
-function newWordToGuessWithLimitedAmount (res, req, numberofwords, socket = null) {
-    connection.query('SELECT * FROM translation ORDER BY answered ASC, failed DESC LIMIT '+numberofwords, function (error, results, fields) {
+function newWordToGuessWithLimitedAmount (res, req, numberofwords, socket = null, language = null) {
+    connection.query('SELECT * FROM translation WHERE language_id = (SELECT id FROM language WHERE slug = \''+language+'\' LIMIT 1) ORDER BY answered ASC, failed DESC LIMIT '+numberofwords, function (error, results, fields) {
         if (error) throw error;
 
     var intActualId = session.intActualIdLimited;
@@ -436,13 +430,13 @@ app.get('/languages', function(req, res){
 .get('/test/:language', function(req, res){
     res.setHeader('Content-type', 'text/html');
 
-    newWordToGuess (res, req);
+    newWordToGuess (res, req, null, req.params.language);
 })
 .get('/test/:language/:numberofwords', function(req, res){
     res.setHeader('Content-type', 'text/html');
     if(Number.isInteger(parseInt(req.params.numberofwords)))
     {
-        newWordToGuessWithLimitedAmount (res, req, req.params.numberofwords);
+        newWordToGuessWithLimitedAmount (res, req, req.params.numberofwords, null, req.params.language);
     }
     else
     {

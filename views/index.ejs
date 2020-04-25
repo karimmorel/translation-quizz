@@ -22,7 +22,7 @@
     <ul>
         <% for(var key in words) { %>
             <li>
-            <%= words[key].english %> : <%= words[key].french %> <a href="/delete/<%= words[key].id %>">delete</a>
+            <%= words[key].focused_language_translation %> : <%= words[key].main_language_translation %> <a href="/delete/<%= words[key].id %>">delete</a>
             </li>
             <% } %>
     </ul>
