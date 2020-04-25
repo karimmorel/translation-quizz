@@ -22,7 +22,7 @@
     <ul>
         <% for(var key in languages) { %>
             <li>
-            <a href="/<%= languages[key].slug %>"><%= languages[key].name %></a> : <%= languages[key].slug %> <%if (languages[key].main_language == false) { %><a href="/language/delete/<%= languages[key].id %>">delete</a><% } %>
+            <a href="/<%= languages[key].slug %>"><%= languages[key].name %></a> : <%= languages[key].slug %> <%if (languages[key].main_language == false) { %><a href="/language/delete/<%= languages[key].id %>">delete</a><% } else { %> ★ <% } %>
             </li>
             <% } %>
     </ul>
