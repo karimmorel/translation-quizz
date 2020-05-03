@@ -76,6 +76,20 @@ a
 {
     color:red;
 }
+
+/* Night Mode */
+#night-mode
+{
+    position: fixed;
+    bottom:30px;
+    left:50%;
+    width:40px;
+    margin-right:-20px;
+    color:#dff9fb;
+    font-size:20px;
+    cursor: pointer;
+}
+
 @-webkit-keyframes couleur {
     0%,
     100% {
