@@ -73,15 +73,9 @@
         count = data.count;
         totalCount = data.total;
 
-        if (language == "en")
-        {
             strWordToGuess = data.focused_language_translation;
             strResponse = data.main_language_translation;
-        }
-        else if (language == "fr"){
-        strWordToGuess = data.main_language_translation;
-        strResponse = data.focused_language_translation
-        }
+
 
         // Answers Count Update
         $('#count-correct-answers').html('Correct : '+data.intCorrectAnswers)
