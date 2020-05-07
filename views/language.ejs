@@ -14,31 +14,56 @@
   <meta name="copyright" content="Morel Karim" />
   <meta name="creation_Date" content="12-02-2020" />
 
+  <!-- Assets -->
+  <link rel="stylesheet" href="/config.css" />
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" />
 </head>
 <body>
+
+<div id="language-list">
 <h1>List of languages</h1>
 
-<div id="word-list">
-    <ul>
-        <% for(var key in languages) { %>
-            <li>
-            <a href="/<%= languages[key].slug %>"><%= languages[key].name %></a> : <%= languages[key].slug %> <%if (languages[key].main_language == false) { %><a href="/language/delete/<%= languages[key].id %>">delete</a><% } else { %> ★ <% } %>
-            </li>
-            <% } %>
-    </ul>
+    <table class="table table-stripped table-bordered table-hover table-condensed">
+        <thead>
+            <tr>
+                <th colspan="1">Name</th>
+                <th colspan="1">Slug</th>
+                <th colspan="1">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for(var key in languages) { %>
+                <tr>
+                    <%if (languages[key].main_language == false) { %>
+                        <td><a href="/<%= languages[key].slug %>"><%= languages[key].name %></a></td>
+                        <% } else { %>
+                        <td><%= languages[key].name %> (Main language)</td>
+                        <% } %>
+                <td><%= languages[key].slug %></td>
+                <td><%if (languages[key].main_language == false) { %><a href="/language/delete/<%= languages[key].id %>">delete</a><% } else { %> ★ <% } %></td>
+                <% } %>
+                </tr>
+        </tbody>
+    </table>
+
+    <h3>Create a new language</h3>
+    <div id="block-add-language">
+        <form action="/languages" method="post" class="form-add-translation"> 
+            <div class="form-group">
+            <label id="title-language-name">Language's name</label>
+            <input type="text" name="name" id="language-name-input" class="form-control" autofocus>
+            </div>
+            <div class="form-group">
+            <label id="title-language-slug">Language's slug</label>
+            <input type="text" name="slug" id="language-slug-input" class="form-control">
+            </div>
+            <input type="submit" id="submit-words" class="btn btn-default">
+        </form>
+    </div>
+
 </div>
 
-<div id="block-add-word">
-    <form action="/languages" method="post" class="form-add-translation"> 
-        <label id="title-english-word">Language's name</label>
-        <input type="text" name="name" id="english-word" autofocus>
-        <br/>
-        <label id="title-french-word">Language's slug</label>
-        <input type="text" name="slug" id="french-word">
-        <br/>
-        <input type="submit" id="submit-words">
-    </form>
-</div>
+
 
 </body>
 </html>
