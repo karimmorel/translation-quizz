@@ -22,7 +22,7 @@
 
 <div id="word-list" class="table-responsive">
 
-    <h1><%= words[0].name %> list</h1>
+    <h1><%= words[0].name %> list (<%= words.length %> word<% if (words.length > 1) { %>s<% } %>)</h1>
     <br/>
 
     <table class="table table-stripped table-bordered table-hover table-condensed">
