@@ -224,6 +224,14 @@ function newWordToGuess (res, req, socket = null, language = null) {
     {
         session.respondedids[language] = [];
     }
+    if (session.intCorrectAnswers[language] == null)
+    {
+        session.intCorrectAnswers[language] = 0;
+    }
+    if (session.intWrongAnswers[language] == null)
+    {
+        session.intWrongAnswers[language] = 0;
+    }
 
     // Get a random word
     var arrRandomList = [];
@@ -299,7 +307,15 @@ function newWordToGuessWithLimitedAmount (res, req, numberofwords, socket = null
     if(session.wordsToGuessLimited[language] == null)
     {
         session.wordsToGuessLimited[language] = [];
-    }    
+    } 
+    if (session.intCorrectAnswersLimited[language] == null)
+    {
+        session.intCorrectAnswersLimited[language] = 0;
+    }
+    if (session.intWrongAnswersLimited[language] == null)
+    {
+        session.intWrongAnswersLimited[language] = 0;
+    }   
 
     var intActualId = session.intActualIdLimited[language];
     var strActualGuess = session.strActualGuessLimited[language];
