@@ -499,7 +499,7 @@ app.get('/languages', function(req, res){
 })
 .get('/end/:language', function(req, res){
     res.setHeader('Content-Type', 'text/html');
-    res.render('end.ejs', {language : req.params.language});
+    res.render('end.ejs', {language : req.params.language, numberofwords : false});
 })
 .get('/end/:language/:numberofwords', function(req, res){
     res.setHeader('Content-Type', 'text/html');
