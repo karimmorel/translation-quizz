@@ -19,9 +19,11 @@
   <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" />
 </head>
 <body>
-<h1><%= words[0].name %> list</h1>
 
-<div id="word-list">
+<div id="word-list" class="table-responsive">
+
+    <h1><%= words[0].name %> list</h1>
+    <br/>
 
     <table class="table table-stripped table-bordered table-hover table-condensed">
         <thead>
@@ -59,22 +61,24 @@
                 <% } %>
         </tbody>
     </table>
-</div>
-
-<div id="block-add-word">
-    <form action="/<%= language %>" method="post" class="form-add-translation"> 
-        <label id="title-english-word"><%= words[0].name %></label>
-        <input type="text" name="englishword" id="english-word" autofocus>
-        <br/>
-        <label id="title-french-word">French</label>
-        <input type="text" name="frenchword" id="french-word">
-        <br/>
-        <input type="submit" id="submit-words">
-    </form>
-</div>
+    <br/>
+    <div id="block-add-word">
+        <form action="/<%= language %>" method="post" class="form-add-translation"> 
+            <label id="title-english-word"><%= words[0].name %></label>
+            <input type="text" name="englishword" id="english-word" autofocus>
+            <br/>
+            <label id="title-french-word">French</label>
+            <input type="text" name="frenchword" id="french-word">
+            <br/>
+            <input type="submit" id="submit-words">
+        </form>
+    </div>
+    <br/>
 
 <a href="/test/<%= language %>">Take the <%= words[0].name %> test</a></br>
 <a href="/languages">Configure languages</a>
+</div>
+
 
 </body>
 </html>
