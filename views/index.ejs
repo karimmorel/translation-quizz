@@ -14,18 +14,51 @@
   <meta name="copyright" content="Morel Karim" />
   <meta name="creation_Date" content="12-02-2020" />
 
+  <!-- Assets -->
+  <link rel="stylesheet" href="/config.css" />
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" />
 </head>
 <body>
 <h1><%= words[0].name %> list</h1>
 
 <div id="word-list">
-    <ul>
-        <% for(var key in words) { %>
-            <li>
-            <%= words[key].focused_language_translation %> : <%= words[key].main_language_translation %> <a href="/delete/<%= language %>/<%= words[key].id %>">delete</a>
-            </li>
-            <% } %>
-    </ul>
+
+    <table class="table table-stripped table-bordered table-hover table-condensed">
+        <thead>
+            <tr>
+                <th colspan="1">Asked Word</th>
+                <th colspan="1">Answer</th>
+                <th colspan="1">Good answer</th>
+                <th colspan="1">Wrong answer</th>
+                <th colspan="1">Average</th>
+                <th colspan="1">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for(var key in words) { %>
+                <% if(words[key].answered+words[key].failed == 0) { %>
+                    <tr class="info">
+                        <% } else if (words[key].answered/(words[key].answered+words[key].failed)*100 >= 80 && words[key].answered+words[key].failed >=5) { %>
+                    <tr class="success">
+                        <% } else if (words[key].answered/(words[key].answered+words[key].failed)*100 <= 40 && words[key].answered+words[key].failed >=5) { %>
+                            <tr class="danger">
+                    <% } else { %>
+                    <tr>
+                    <% } %>
+                    <td><%= words[key].focused_language_translation %></td>
+                    <td><%= words[key].main_language_translation %></td>
+                    <td><%= words[key].answered %></td>
+                    <td><%= words[key].failed %></td>
+                    <% if(words[key].answered+words[key].failed != 0) { %>
+                    <td><%= words[key].answered/(words[key].answered+words[key].failed)*100 %>%</td>
+                    <% } else { %>
+                    <td>Never asked</td>
+                    <% } %>
+                    <td><a href="/delete/<%= language %>/<%= words[key].id %>">Delete</a></td>
+                </tr>
+                <% } %>
+        </tbody>
+    </table>
 </div>
 
 <div id="block-add-word">
