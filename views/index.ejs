@@ -62,21 +62,29 @@
         </tbody>
     </table>
     <br/>
+
+
     <div id="block-add-word">
-        <form action="/<%= language %>" method="post" class="form-add-translation"> 
-            <label id="title-english-word"><%= words[0].name %></label>
-            <input type="text" name="englishword" id="english-word" autofocus>
-            <br/>
-            <label id="title-french-word">French</label>
-            <input type="text" name="frenchword" id="french-word">
-            <br/>
-            <input type="submit" id="submit-words">
-        </form>
-    </div>
+    <form action="/<%= language %>" method="post" >
+        <div class="form-group">
+          <label id="title-english-word" for="english-word"><%= words[0].name %></label>
+          <input type="text" class="form-control" id="title-english-word-input" name="englishword" autofocus>
+        </div>
+        <div class="form-group">
+          <label id="title-french-word" for="french-word">French</label>
+          <input type="text" class="form-control" id="title-french-word-input" name="frenchword">
+        </div>
+        <button type="submit" class="btn btn-default">Submit</button>
+      </form>
+      </div>
+
+
+
     <br/>
 
-<a href="/test/<%= language %>">Take the <%= words[0].name %> test</a></br>
-<a href="/languages">Configure languages</a>
+<a href="/test/<%= language %>"><button class="btn btn-info">Take the <%= words[0].name %> test</button></a></br><br/>
+<a href="/languages"><button class="btn btn-success">Configure languages</button></a>
+
 </div>
 
 
