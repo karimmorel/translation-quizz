@@ -7,7 +7,8 @@ var connection = mysql.createConnection({
   user     : 'root',
   password : 'root',
   database : 'translate_trainer',
-  port     : '8889'
+  port     : '8889',
+  multipleStatements: true
 });
  
 var app = express();
@@ -25,6 +26,10 @@ app.use(session({
 app.use(express.static(__dirname + '/assets'));
 
 app.use(function (req, res, next) {
+
+    if(!session.user_main_language) {
+        session.user_main_language = 'SELECT * FROM language WHERE main_language = 1;';
+    }
 
     // List of ids already responded
     if (!session.respondedids) {
@@ -68,8 +73,6 @@ app.use(function (req, res, next) {
     if(!session.intWrongAnswersLimited) {
         session.intWrongAnswersLimited = [];
     }
-
-
     next()
   })
 
@@ -214,7 +217,7 @@ app.use(function (req, res, next) {
 
 
 function newWordToGuess (res, req, socket = null, language = null) {
-    let arrTranslationList = connection.query('SELECT * FROM translation WHERE language_id = (SELECT id FROM language WHERE slug = \''+language+'\' LIMIT 1)', function (error, results, fields) {
+    let arrTranslationList = connection.query('SELECT * FROM translation WHERE active = 1 AND language_id = (SELECT id FROM language WHERE slug = \''+language+'\' LIMIT 1)', function (error, results, fields) {
         if (error) throw error;
 
     var intActualId = session.intActualId[language];
@@ -297,7 +300,7 @@ else
 
 
 function newWordToGuessWithLimitedAmount (res, req, numberofwords, socket = null, language = null) {
-    connection.query('SELECT * FROM translation WHERE language_id = (SELECT id FROM language WHERE slug = \''+language+'\' LIMIT 1) ORDER BY answered ASC, failed DESC LIMIT '+numberofwords, function (error, results, fields) {
+    connection.query('SELECT * FROM translation WHERE active = 1 AND language_id = (SELECT id FROM language WHERE slug = \''+language+'\' LIMIT 1) ORDER BY answered ASC, failed DESC LIMIT '+numberofwords, function (error, results, fields) {
         if (error) throw error;
 
     if(session.respondedidsLimited[language] == null)
@@ -406,7 +409,7 @@ else
 
 
 app.get('/languages', function(req, res){
-    let arrTranslationList = connection.query('SELECT * FROM language ORDER BY main_language DESC', function (error, results, fields) {
+    let arrTranslationList = connection.query('SELECT * FROM language WHERE active = 1 ORDER BY main_language DESC', function (error, results, fields) {
         if (error) throw error;
         res.setHeader('Content-type', 'text/html');
         res.render('language.ejs', {languages : results});
@@ -427,14 +430,19 @@ app.get('/languages', function(req, res){
 })
 .get('/:language', function(req, res){
 
-    let arrTranslationList = connection.query('SELECT translation.*, language.name, language.slug FROM translation INNER JOIN language ON translation.language_id = language.id WHERE translation.language_id = (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1)', function (error, results, fields) {
+    var sql = 'SELECT translation.*, language.name, language.slug FROM translation INNER JOIN language ON translation.language_id = language.id WHERE translation.active = 1 AND translation.language_id = (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1); SELECT * FROM language WHERE slug = \''+req.params.language+'\';';
+    sql += session.user_main_language;
+    console.log("request arrived for URL", req.url);
+    let arrTranslationList = connection.query(sql, function (error, results, fields) {
         if (error) throw error;
-        res.setHeader('Content-type', 'text/html');
-        res.render('index.ejs', {words : results, language : req.params.language});
+        if(results)
+        {
+            res.setHeader('Content-type', 'text/html');
+            res.render('index.ejs', {words : results[0], slug : req.params.language, language : results[1][0], main_language : results[2][0]});
+        }    
       });
 })
 .post('/:language', function(req, res){
-
     var newFrenchWord = req.body.frenchword.replace(/'/g, "\\'");
     var newEnglishWord = req.body.englishword.replace(/'/g, "\\'");
 
@@ -449,7 +457,7 @@ app.get('/languages', function(req, res){
 .get('/language/delete/:strKeyToDelete', function(req, res){
     res.setHeader('Content-type', 'text/html');
 
-    let deleteQuery = connection.query('DELETE FROM language WHERE id = '+req.params.strKeyToDelete, function (error, results, fields) {
+    let deleteQuery = connection.query('UPDATE language SET active = 0 WHERE id = '+req.params.strKeyToDelete, function (error, results, fields) {
         if (error) throw error;
     });
 
@@ -459,7 +467,7 @@ app.get('/languages', function(req, res){
 .get('/delete/:language/:strKeyToDelete', function(req, res){
     res.setHeader('Content-type', 'text/html');
 
-    let deleteQuery = connection.query('DELETE FROM translation WHERE id = '+req.params.strKeyToDelete, function (error, results, fields) {
+    let deleteQuery = connection.query('UPDATE translation SET active = 0 WHERE id = '+req.params.strKeyToDelete, function (error, results, fields) {
         if (error) throw error;
     });
 

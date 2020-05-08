@@ -22,7 +22,7 @@
 
 <div id="word-list" class="table-responsive">
 
-    <h1><%= words[0].name %> list (<%= words.length %> word<% if (words.length > 1) { %>s<% } %>)</h1>
+    <h1><%= language.name %> list (<%= words.length %> word<% if (words.length > 1) { %>s<% } %>)</h1>
     <br/>
 
     <table class="table table-stripped table-bordered table-hover table-condensed">
@@ -56,7 +56,7 @@
                     <% } else { %>
                     <td>Never asked</td>
                     <% } %>
-                    <td><a href="/delete/<%= language %>/<%= words[key].id %>">Delete</a></td>
+                    <td><a href="/delete/<%= slug %>/<%= words[key].id %>">Delete</a></td>
                 </tr>
                 <% } %>
         </tbody>
@@ -65,13 +65,13 @@
 
     <div id="block-add-word">
         <h3>Add a new word</h3>
-    <form action="/<%= language %>" method="post" >
+    <form action="/<%= slug %>" method="post" >
         <div class="form-group">
-          <label id="title-english-word" for="english-word"><%= words[0].name %></label>
+          <label id="title-english-word" for="english-word"><%= language.name %></label>
           <input type="text" class="form-control" id="title-english-word-input" name="englishword" autofocus>
         </div>
         <div class="form-group">
-          <label id="title-french-word" for="french-word">French</label>
+          <label id="title-french-word" for="french-word"><%= main_language.name %></label>
           <input type="text" class="form-control" id="title-french-word-input" name="frenchword">
         </div>
         <button type="submit" class="btn btn-default">Submit</button>
@@ -82,7 +82,7 @@
 
     <br/>
 
-<a href="/test/<%= language %>"><button class="btn btn-info">Take the <%= words[0].name %> test</button></a></br><br/>
+<a href="/test/<%= slug %>"><button class="btn btn-info">Take the <%= language.name %> test</button></a></br><br/>
 <a href="/languages"><button class="btn btn-success">Configure languages</button></a>
 
 </div>
