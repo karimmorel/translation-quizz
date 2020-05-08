@@ -407,8 +407,23 @@ else
 });  
 }
 
+// If asking for favicon --> Redirect the request
+function askingForFavicon (req, res)
+{
+    if (req.url === '/favicon.ico') {
+        res.writeHead(200, {'Content-Type': 'image/x-icon'} );
+        res.end();
+        return false;
+    }
+    return true;
+}
 
 app.get('/languages', function(req, res){
+    var boolFavicon = askingForFavicon(req, res);
+    if(boolFavicon ==  false)
+    {
+        return;
+    }
     let arrTranslationList = connection.query('SELECT * FROM language WHERE active = 1 ORDER BY main_language DESC', function (error, results, fields) {
         if (error) throw error;
         res.setHeader('Content-type', 'text/html');
@@ -429,10 +444,13 @@ app.get('/languages', function(req, res){
     res.redirect('/languages');
 })
 .get('/:language', function(req, res){
-
+    var boolFavicon = askingForFavicon(req, res);
+    if(boolFavicon ==  false)
+    {
+        return;
+    }
     var sql = 'SELECT translation.*, language.name, language.slug FROM translation INNER JOIN language ON translation.language_id = language.id WHERE translation.active = 1 AND translation.language_id = (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1); SELECT * FROM language WHERE slug = \''+req.params.language+'\';';
     sql += session.user_main_language;
-    console.log("request arrived for URL", req.url);
     let arrTranslationList = connection.query(sql, function (error, results, fields) {
         if (error) throw error;
         if(results)
