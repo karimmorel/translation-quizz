@@ -418,7 +418,13 @@ function askingForFavicon (req, res)
     return true;
 }
 
-app.get('/languages', function(req, res){
+app.get('/error', function(req, res){
+    res.render('error.ejs');
+})
+.get('/', function(req, res){
+    res.redirect('/languages');
+})
+.get('/languages', function(req, res){
     var boolFavicon = askingForFavicon(req, res);
     if(boolFavicon ==  false)
     {
@@ -442,35 +448,6 @@ app.get('/languages', function(req, res){
 
     // Redirection
     res.redirect('/languages');
-})
-.get('/:language', function(req, res){
-    var boolFavicon = askingForFavicon(req, res);
-    if(boolFavicon ==  false)
-    {
-        return;
-    }
-    var sql = 'SELECT translation.*, language.name, language.slug FROM translation INNER JOIN language ON translation.language_id = language.id WHERE translation.active = 1 AND translation.language_id = (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1); SELECT * FROM language WHERE slug = \''+req.params.language+'\';';
-    sql += session.user_main_language;
-    let arrTranslationList = connection.query(sql, function (error, results, fields) {
-        if (error) throw error;
-        if(results)
-        {
-            res.setHeader('Content-type', 'text/html');
-            res.render('index.ejs', {words : results[0], slug : req.params.language, language : results[1][0], main_language : results[2][0]});
-        }    
-      });
-})
-.post('/:language', function(req, res){
-    var newFrenchWord = req.body.frenchword.replace(/'/g, "\\'");
-    var newEnglishWord = req.body.englishword.replace(/'/g, "\\'");
-
-    // Use MySQL
-    connection.query('INSERT INTO translation (focused_language_translation, main_language_translation, language_id) VALUES (\''+newEnglishWord+'\', \''+newFrenchWord+'\', (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1))', function (error, results, fields) {
-        if (error) throw error;
-    });
-
-    // Redirection
-    res.redirect('/'+req.params.language);
 })
 .get('/language/delete/:strKeyToDelete', function(req, res){
     res.setHeader('Content-type', 'text/html');
@@ -546,6 +523,36 @@ app.get('/languages', function(req, res){
 .get('/end/:language/:numberofwords', function(req, res){
     res.setHeader('Content-Type', 'text/html');
     res.render('end.ejs', {language : req.params.language, numberofwords : req.params.numberofwords});
+})
+.get('/:language', function(req, res){
+    var boolFavicon = askingForFavicon(req, res);
+    if(boolFavicon ==  false)
+    {
+        return;
+    }
+    var sql = 'SELECT translation.*, language.name, language.slug FROM translation INNER JOIN language ON translation.language_id = language.id WHERE translation.active = 1 AND translation.language_id = (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1); SELECT * FROM language WHERE slug = \''+req.params.language+'\';';
+    sql += session.user_main_language;
+    let arrTranslationList = connection.query(sql, function (error, results, fields) {
+        if (error) throw error;
+        if(results[1][0].active == 0){
+            res.redirect('/error');
+            return;
+        };
+            res.setHeader('Content-type', 'text/html');
+            res.render('index.ejs', {words : results[0], slug : req.params.language, language : results[1][0], main_language : results[2][0]}); 
+      });
+})
+.post('/:language', function(req, res){
+    var newFrenchWord = req.body.frenchword.replace(/'/g, "\\'");
+    var newEnglishWord = req.body.englishword.replace(/'/g, "\\'");
+
+    // Use MySQL
+    connection.query('INSERT INTO translation (focused_language_translation, main_language_translation, language_id) VALUES (\''+newEnglishWord+'\', \''+newFrenchWord+'\', (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1))', function (error, results, fields) {
+        if (error) throw error;
+    });
+
+    // Redirection
+    res.redirect('/'+req.params.language);
 })
 .use(function(req, res, next){
     res.setHeader('Content-Type', 'text/html');
