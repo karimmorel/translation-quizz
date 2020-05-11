@@ -527,6 +527,20 @@ app.get('/error', function(req, res){
     res.setHeader('Content-Type', 'text/html');
     res.render('end.ejs', {language : req.params.language, numberofwords : req.params.numberofwords});
 })
+.get('/addtofav/:slug/:wordid', function(req, res){
+    // Add a word to favorite
+    connection.query('UPDATE translation SET favorite = 1 WHERE id = '+req.params.wordid, function (error, results, fields) {
+        if (error) throw error;
+    });
+    res.redirect('/'+req.params.slug);
+})
+.get('/removefromfav/:slug/:wordid', function(req, res){
+    // Remove a word from favorite
+    connection.query('UPDATE translation SET favorite = 0 WHERE id = '+req.params.wordid, function (error, results, fields) {
+        if (error) throw error;
+    });
+    res.redirect('/'+req.params.slug);
+})
 .get('/:language', function(req, res){
     var boolFavicon = askingForFavicon(req, res);
     if(boolFavicon ==  false)

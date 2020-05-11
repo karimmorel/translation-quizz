@@ -33,6 +33,7 @@
                 <th colspan="1">Good answer</th>
                 <th colspan="1">Wrong answer</th>
                 <th colspan="1">Average</th>
+                <th colspan="1">Favorite</th>
                 <th colspan="1">Action</th>
             </tr>
         </thead>
@@ -56,6 +57,13 @@
                     <% } else { %>
                     <td>Never asked</td>
                     <% } %>
+                    <td>
+                        <% if(words[key].favorite) { %>
+                        <a href="/removefromfav/<%= slug %>/<%= words[key].id %>">Yes</a>
+                        <% } else { %>
+                            <a href="/addtofav/<%= slug %>/<%= words[key].id %>">No</a>
+                            <% } %>
+                    </td>
                     <td><a href="/delete/<%= slug %>/<%= words[key].id %>">Delete</a></td>
                 </tr>
                 <% } %>
