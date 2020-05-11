@@ -441,10 +441,13 @@ app.get('/error', function(req, res){
     var strName = req.body.name.replace(/'/g, "\\'");
     var strSlug = req.body.slug.replace(/'/g, "\\'");
 
-    // Use MySQL
-    connection.query('INSERT INTO language (name, slug) VALUES (\''+strName+'\', \''+strSlug+'\')', function (error, results, fields) {
-        if (error) throw error;
-    });
+    if(strSlug && strName)
+    {
+        // Use MySQL
+        connection.query('INSERT INTO language (name, slug) VALUES (\''+strName+'\', \''+strSlug+'\')', function (error, results, fields) {
+            if (error) throw error;
+        });
+    }
 
     // Redirection
     res.redirect('/languages');
@@ -543,14 +546,17 @@ app.get('/error', function(req, res){
       });
 })
 .post('/:language', function(req, res){
-    var newFrenchWord = req.body.frenchword.replace(/'/g, "\\'");
-    var newEnglishWord = req.body.englishword.replace(/'/g, "\\'");
+    var newMainLanguageWord = req.body.frenchword.replace(/'/g, "\\'");
+    var newLearnedLanguageWord = req.body.englishword.replace(/'/g, "\\'");
 
-    // Use MySQL
-    connection.query('INSERT INTO translation (focused_language_translation, main_language_translation, language_id) VALUES (\''+newEnglishWord+'\', \''+newFrenchWord+'\', (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1))', function (error, results, fields) {
-        if (error) throw error;
-    });
-
+    if(newMainLanguageWord && newLearnedLanguageWord)
+    {
+        // Use MySQL
+        connection.query('INSERT INTO translation (focused_language_translation, main_language_translation, language_id) VALUES (\''+newLearnedLanguageWord+'\', \''+newMainLanguageWord+'\', (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1))', function (error, results, fields) {
+            if (error) throw error;
+        });
+    }
+    
     // Redirection
     res.redirect('/'+req.params.language);
 })
