@@ -30,6 +30,9 @@ app.use(function (req, res, next) {
     if(!session.user_main_language) {
         session.user_main_language = 'SELECT * FROM language WHERE main_language = 1;';
     }
+    if(!session.error_message) {
+        session.error_message = null;
+    }
 
     // List of ids already responded
     if (!session.respondedids) {
@@ -549,6 +552,17 @@ app.get('/error', function(req, res){
     }
     var sql = 'SELECT translation.*, language.name, language.slug FROM translation INNER JOIN language ON translation.language_id = language.id WHERE translation.active = 1 AND translation.language_id = (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1); SELECT * FROM language WHERE slug = \''+req.params.language+'\';';
     sql += session.user_main_language;
+
+    if(session.error_message)
+    {
+        var front_message = session.error_message;
+        session.error_message = null;
+    }
+    else
+    {
+        var front_message = null;
+    }
+
     let arrTranslationList = connection.query(sql, function (error, results, fields) {
         if (error) throw error;
         if(results[1][0].active == 0){
@@ -556,7 +570,7 @@ app.get('/error', function(req, res){
             return;
         };
             res.setHeader('Content-type', 'text/html');
-            res.render('index.ejs', {words : results[0], slug : req.params.language, language : results[1][0], main_language : results[2][0]}); 
+            res.render('index.ejs', {words : results[0], slug : req.params.language, language : results[1][0], main_language : results[2][0], message : front_message}); 
       });
 })
 .post('/:language', function(req, res){
@@ -565,10 +579,20 @@ app.get('/error', function(req, res){
 
     if(newMainLanguageWord && newLearnedLanguageWord)
     {
-        // Use MySQL
-        connection.query('INSERT INTO translation (focused_language_translation, main_language_translation, language_id) VALUES (\''+newLearnedLanguageWord+'\', \''+newMainLanguageWord+'\', (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1))', function (error, results, fields) {
+        connection.query('SELECT * FROM translation WHERE language_id = (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1) AND focused_language_translation = \''+newLearnedLanguageWord+'\'', function (error, results, fields) {
             if (error) throw error;
+            if(results[0])
+            {
+                session.error_message = 'The word \''+newLearnedLanguageWord+'\' already exists in your list. ('+results[0].focused_language_translation+' : '+results[0].main_language_translation+')';
+            }
+
+            // Use MySQL
+            connection.query('INSERT INTO translation (focused_language_translation, main_language_translation, language_id) VALUES (\''+newLearnedLanguageWord+'\', \''+newMainLanguageWord+'\', (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1))', function (error, results, fields) {
+                if (error) throw error;
+            });
+
         });
+        
     }
     
     // Redirection

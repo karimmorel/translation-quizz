@@ -71,6 +71,12 @@
     </table>
     <br/>
 
+    <% if (message) { %>
+    <div id="block-message" class="alert alert-info" role="alert">
+        <%= message %>
+    </div>
+    <% } %>
+
     <div id="block-add-word">
         <h3>Add a new word</h3>
     <form action="/<%= slug %>" method="post" >
