@@ -89,6 +89,10 @@ a
     font-size:20px;
     cursor: pointer;
 }
+.redo
+{
+    display:none;
+}
 
 @-webkit-keyframes couleur {
     0%,

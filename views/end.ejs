@@ -21,9 +21,10 @@
     <div id="content">
 <h1>Fin du test</h1>
 
-<a href="/">Configurer le test</a>
+<a href="/">Configure the test</a>
 <%if (numberofwords) { %>
-<a href="/reboot/<%= language %>/<%= numberofwords %>">Reboot le test</a>
+<a href="/reboot/<%= language %>/<%= numberofwords %>">Reboot the test</a>
+<a href="/redo/<%= language %>/<%= numberofwords %>">Retake the same test</a>
 <% } else { %>
   <a href="/reboot/<%= language %>">Reboot le test</a>
   <% } %>

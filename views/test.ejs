@@ -48,6 +48,7 @@
 <a href="/<%= language %>">Configurer le test</a>
 <%if (limited == true) { %>
     <a href="/reboot/<%= language %>/<%= numberofwords %>">Reboot le test</a>
+    <a class="redo" href="/redo/<%= language %>/<%= numberofwords %>">Retake the same test</a>
     <% } else { %>
         <a href="/reboot/<%= language %>">Reboot le test</a>
         <% } %>
@@ -106,6 +107,7 @@
         $('.count').hide();
         $('#submit-response').hide();
         $('#button-ask-answer').hide();
+        $('.redo').show();
     });
     
     $('#button-ask-answer').click(function(){

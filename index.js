@@ -544,6 +544,16 @@ app.get('/error', function(req, res){
     });
     res.redirect('/'+req.params.slug);
 })
+.get('/redo/:language/:numberofwords', function(req, res){
+    res.setHeader('Content-Type', 'text/html');
+    session.respondedidsLimited[req.params.language] = [];
+    session.intActualIdLimited[req.params.language] = null;
+    session.strActualGuessLimited[req.params.language] = null;
+    session.intCorrectAnswersLimited[req.params.language] = 0;
+    session.intWrongAnswersLimited[req.params.language] = 0;
+
+    res.redirect('/test/'+req.params.language+'/'+req.params.numberofwords);
+})
 .get('/:language', function(req, res){
     var boolFavicon = askingForFavicon(req, res);
     if(boolFavicon ==  false)
