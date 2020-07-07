@@ -42,7 +42,12 @@
         Demander la réponse
     </button>
 </div>
-
+<div id="answers-container">
+    <div id="answers-close">+</div>
+    <ul id="answers-list">
+        <li>Vide</li>
+    </ul>
+</div>
 <div id="response-value" style="display: none;"><%= response %></div>
 
 <a href="/<%= language %>">Configurer le test</a>
@@ -71,6 +76,24 @@
             <% } %>
         $('#block-message').html('');
         return false;
+    });
+
+    // Ask for the correct answers list
+    $('#count-correct-answers').click(function(){
+        <%if (limited == true) { %>
+            socket.emit('list-of-correct-answers-limited', {'language' : language});
+            <% } else { %>
+                socket.emit('list-of-correct-answers', {'language' : language});
+                <% } %>
+    });
+
+    // Ask for the wrong answers list
+    $('#count-wrong-answers').click(function(){
+        <%if (limited == true) { %>
+            socket.emit('list-of-wrong-answers-limited', {'language' : language});
+            <% } else { %>
+                socket.emit('list-of-wrong-answers', {'language' : language});
+                <% } %>
     });
 
     socket.on('good-answer', function (data) {
@@ -109,6 +132,22 @@
         $('#button-ask-answer').hide();
         $('.redo').show();
     });
+
+    socket.on('show-answers-list', function (data) {
+        var strAnswersList = '';
+        for (answer in data.list)
+        {
+            strAnswersList += '<li>'+data.list[answer].guess+' : '+data.list[answer].answer+'</li>';
+        }
+
+        $('#answers-list').html(strAnswersList);
+        $('#answers-container').css({right:0});
+    });
+
+    $('#answers-close').click(function (){
+        $('#answers-container').css({right:'-40%'});
+    });
+
     
     $('#button-ask-answer').click(function(){
         $('#response').val($('#response-value').html());

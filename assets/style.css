@@ -77,6 +77,18 @@ a
     color:red;
 }
 
+/* Answers List */
+#answers-container
+{
+    position:fixed;
+    height:100%;
+    width:40%;
+    top:0;
+    right:-40%;
+    background:pink;
+    transition: all 1s;
+}
+
 /* Night Mode */
 #night-mode
 {

@@ -52,6 +52,15 @@ app.use(function (req, res, next) {
     if(!session.intWrongAnswers) {
         session.intWrongAnswers = [];
     }
+    // List of wrong and correct answers during the test
+    if(!session.arrCorrectAnswersList) {
+        session.arrCorrectAnswersList = [];
+    }
+    if(!session.arrWrongAnswersList) {
+        session.arrWrongAnswersList = [];
+    }
+
+
 
     // Variables for the quizz with limited amout of words
 
@@ -75,6 +84,13 @@ app.use(function (req, res, next) {
     }
     if(!session.intWrongAnswersLimited) {
         session.intWrongAnswersLimited = [];
+    }
+    // List of wrong and correct answers during the limited test
+    if(!session.arrCorrectAnswersListLimited) {
+        session.arrCorrectAnswersListLimited = [];
+    }
+    if(!session.arrWrongAnswersListLimited) {
+        session.arrWrongAnswersListLimited = [];
     }
     next()
   })
@@ -123,30 +139,34 @@ app.use(function (req, res, next) {
               if(!boolAnswerAsked)
               {
                 //If the user does not click on the "Ask the answer" button -->  Update number of good answer for this word
-                connection.query('UPDATE translation SET answered = answered + 1 WHERE id = '+id, function (error, results, fields) {
+                connection.query('UPDATE translation SET answered = answered + 1 WHERE id = '+id+';SELECT * FROM translation WHERE id = '+id, function (error, results, fields) {
                     if (error) throw error;
                     if(boolLimited == false)
                     {
                         session.intCorrectAnswers[language] = session.intCorrectAnswers[language] + 1;
+                        session.arrCorrectAnswersList[language].push({ guess : results[1][0].focused_language_translation, answer : results[1][0].main_language_translation});
                     }
                     else
                     {
                         session.intCorrectAnswersLimited[language] = session.intCorrectAnswersLimited[language] + 1;
+                        session.arrCorrectAnswersListLimited[language].push( {guess : results[1][0].focused_language_translation, answer : results[1][0].main_language_translation});
                     }
                 });
               }
               else
               {
                   //If the user click on the "Ask the answer" button -->  Update number of failed answer for this word
-                connection.query('UPDATE translation SET failed = failed + 1 WHERE id = '+id, function (error, results, fields) {
+                connection.query('UPDATE translation SET failed = failed + 1 WHERE id = '+id+';SELECT * FROM translation WHERE id = '+id, function (error, results, fields) {
                     if (error) throw error;
                     if(boolLimited == false)
                     {
                         session.intWrongAnswers[language] = session.intWrongAnswers[language] + 1;
+                        session.arrWrongAnswersList[language].push({guess : results[1][0].focused_language_translation, answer : results[1][0].main_language_translation});
                     }
                     else
                     {
                         session.intWrongAnswersLimited[language] = session.intWrongAnswersLimited[language] + 1;
+                        session.arrWrongAnswersListLimited[language].push({guess : results[1][0].focused_language_translation, answer : results[1][0].main_language_translation});
                     }
                 });
               }
@@ -192,13 +212,13 @@ app.use(function (req, res, next) {
             boolAddId = true;
         }
     
-
             var boolReturn = callback(boolAddId, language, response, id, boolAnswerAsked, res, boolLimited);
 
             if(res == null)
             {
             if(boolReturn == true)
             {
+
                 if(boolLimited == true)
                 {
                     newWordToGuessWithLimitedAmount(null, null, numberofwords, socket, language);
@@ -226,6 +246,7 @@ function newWordToGuess (res, req, socket = null, language = null) {
     var intActualId = session.intActualId[language];
     var strActualGuess = session.strActualGuess[language];
 
+    // Setting session vars
     if (session.respondedids[language] == null)
     {
         session.respondedids[language] = [];
@@ -237,6 +258,14 @@ function newWordToGuess (res, req, socket = null, language = null) {
     if (session.intWrongAnswers[language] == null)
     {
         session.intWrongAnswers[language] = 0;
+    }
+    if (session.arrCorrectAnswersList[language] == null)
+    {
+        session.arrCorrectAnswersList[language] = [];
+    }
+    if (session.arrWrongAnswersList[language] == null)
+    {
+        session.arrWrongAnswersList[language] = [];
     }
 
     // Get a random word
@@ -275,7 +304,7 @@ function newWordToGuess (res, req, socket = null, language = null) {
     // Render
     if(res && req)
     {
-        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.focused_language_translation, response : arrWordToGuess.main_language_translation, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : false, intCorrectAnswers : session.intCorrectAnswers[language], intWrongAnswers : session.intWrongAnswers[language]});
+        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.focused_language_translation, response : arrWordToGuess.main_language_translation, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : false, intCorrectAnswers : session.intCorrectAnswers[language], intWrongAnswers : session.intWrongAnswers[language], limited : false});
 
     }
     else
@@ -306,6 +335,7 @@ function newWordToGuessWithLimitedAmount (res, req, numberofwords, socket = null
     connection.query('SELECT * FROM translation WHERE active = 1 AND language_id = (SELECT id FROM language WHERE slug = \''+language+'\' LIMIT 1) ORDER BY answered ASC, failed DESC LIMIT '+numberofwords, function (error, results, fields) {
         if (error) throw error;
 
+    // Setting session vars
     if(session.respondedidsLimited[language] == null)
     {
         session.respondedidsLimited[language] = [];
@@ -321,6 +351,14 @@ function newWordToGuessWithLimitedAmount (res, req, numberofwords, socket = null
     if (session.intWrongAnswersLimited[language] == null)
     {
         session.intWrongAnswersLimited[language] = 0;
+    }
+    if (session.arrCorrectAnswersListLimited[language] == null)
+    {
+        session.arrCorrectAnswersListLimited[language] = [];
+    }
+    if (session.arrWrongAnswersListLimited[language] == null)
+    {
+        session.arrWrongAnswersListLimited[language] = [];
     }   
 
     var intActualId = session.intActualIdLimited[language];
@@ -385,7 +423,7 @@ function newWordToGuessWithLimitedAmount (res, req, numberofwords, socket = null
     // Render
     if(res && req)
     {
-        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.focused_language_translation, response : arrWordToGuess.main_language_translation, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : true, numberofwords : numberofwords, intCorrectAnswers : session.intCorrectAnswersLimited[req.params.language], intWrongAnswers : session.intWrongAnswersLimited[req.params.language]});
+        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.focused_language_translation, response : arrWordToGuess.main_language_translation, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : true, numberofwords : numberofwords, intCorrectAnswers : session.intCorrectAnswersLimited[req.params.language], intWrongAnswers : session.intWrongAnswersLimited[req.params.language], limited : true});
     }
     else
     {
@@ -508,6 +546,8 @@ app.get('/error', function(req, res){
     session.respondedids[req.params.language] = [];
     session.intCorrectAnswers[req.params.language] = 0;
     session.intWrongAnswers[req.params.language] = 0;
+    session.arrCorrectAnswersList[req.params.language] = []
+    session.arrWrongAnswersList[req.params.language] = []
 
     res.redirect('/test/'+req.params.language);
 })
@@ -519,6 +559,8 @@ app.get('/error', function(req, res){
     session.strActualGuessLimited[req.params.language] = null;
     session.intCorrectAnswersLimited[req.params.language] = 0;
     session.intWrongAnswersLimited[req.params.language] = 0;
+    session.arrCorrectAnswersListLimited[req.params.language] = []
+    session.arrWrongAnswersListLimited[req.params.language] = []
 
     res.redirect('/test/'+req.params.language+'/'+req.params.numberofwords);
 })
@@ -551,6 +593,8 @@ app.get('/error', function(req, res){
     session.strActualGuessLimited[req.params.language] = null;
     session.intCorrectAnswersLimited[req.params.language] = 0;
     session.intWrongAnswersLimited[req.params.language] = 0;
+    session.arrCorrectAnswersListLimited[req.params.language] = []
+    session.arrWrongAnswersListLimited[req.params.language] = []
 
     res.redirect('/test/'+req.params.language+'/'+req.params.numberofwords);
 })
@@ -589,7 +633,7 @@ app.get('/error', function(req, res){
 
     if(newMainLanguageWord && newLearnedLanguageWord)
     {
-        connection.query('SELECT * FROM translation WHERE language_id = (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1) AND focused_language_translation = \''+newLearnedLanguageWord+'\'', function (error, results, fields) {
+        connection.query('SELECT * FROM translation WHERE language_id = (SELECT id FROM language WHERE slug = \''+req.params.language+'\' LIMIT 1) AND focused_language_translation = \''+newLearnedLanguageWord+'\' AND active = 1', function (error, results, fields) {
             if (error) throw error;
             if(results[0])
             {
@@ -641,6 +685,22 @@ io.on('connection', function (socket) {
 
         // Process with the answer sent
         addIdToSessionOrNot(setIdToSession, strLanguage, strAnswer, intId, boolAnswerAsked, null, socket, true, numberofwords);
+    });
+
+
+    // Ask for answers list (Correct or Wrong, Limited test or not)
+    socket.on('list-of-correct-answers', function (data) {
+        console.log(session.arrCorrectAnswersList[data.language]);
+        socket.emit('show-answers-list', {list : session.arrCorrectAnswersList[data.language], dragon : 'dragon'});
+    });
+    socket.on('list-of-wrong-answers', function (data) {
+        socket.emit('show-answers-list', {list : session.arrWrongAnswersList[data.language]});
+    });
+    socket.on('list-of-correct-answers-limited', function (data) {
+        socket.emit('show-answers-list', {list : session.arrCorrectAnswersListLimited[data.language]});
+    });
+    socket.on('list-of-wrong-answers-limited', function (data) {
+        socket.emit('show-answers-list', {list : session.arrWrongAnswersListLimited[data.language]});
     });
   });
 
