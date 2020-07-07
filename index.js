@@ -624,7 +624,35 @@ app.get('/error', function(req, res){
             return;
         };
             res.setHeader('Content-type', 'text/html');
-            res.render('index.ejs', {words : results[0], slug : req.params.language, language : results[1][0], main_language : results[2][0], message : front_message}); 
+
+            /* Analyse each word to see if there is good or bad results */
+            var wordsStats = {success : 0, danger : 0, neutral : 0, new :0, answered : 0, failed : 0}
+
+            for (var word in results[0]) {
+                if(results[0][word].answered+results[0][word].failed == 0)
+                {
+                    results[0][word].class = "new";
+                    wordsStats.new++;
+                }
+                else if (results[0][word].answered/(results[0][word].answered+results[0][word].failed)*100 >= 75 && results[0][word].answered+results[0][word].failed >=3) {
+                    results[0][word].class = "success";
+                    wordsStats.success++;
+                }
+                else if (results[0][word].answered/(results[0][word].answered+results[0][word].failed)*100 <= 25 && results[0][word].answered+results[0][word].failed >=3) {
+                    results[0][word].class = "danger";
+                    wordsStats.danger++;
+                }
+                else {
+                    results[0][word].class = "neutral";
+                    wordsStats.neutral++;
+                }
+
+                wordsStats.answered += results[0][word].answered;
+                wordsStats.failed += results[0][word].failed;
+            }
+
+
+            res.render('index.ejs', {words : results[0], wordsstats : wordsStats, slug : req.params.language, language : results[1][0], main_language : results[2][0], message : front_message}); 
       });
 })
 .post('/:language', function(req, res){

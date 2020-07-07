@@ -39,11 +39,11 @@
         </thead>
         <tbody>
             <% for(var key in words) { %>
-                <% if(words[key].answered+words[key].failed == 0) { %>
+                <% if(words[key].class == 'new') { %>
                     <tr class="info">
-                        <% } else if (words[key].answered/(words[key].answered+words[key].failed)*100 >= 80 && words[key].answered+words[key].failed >=5) { %>
+                        <% } else if (words[key].class == 'success') { %>
                     <tr class="success">
-                        <% } else if (words[key].answered/(words[key].answered+words[key].failed)*100 <= 40 && words[key].answered+words[key].failed >=5) { %>
+                        <% } else if (words[key].class == 'danger') { %>
                             <tr class="danger">
                     <% } else { %>
                     <tr>
@@ -76,6 +76,17 @@
         <%= message %>
     </div>
     <% } %>
+
+    <div id="words-stats">
+        <h3>Stats</h3>
+        <p>Success : <%= wordsstats.success %></p>
+        <p>Neutral : <%= wordsstats.neutral %></p>
+        <p>Danger : <%= wordsstats.danger %></p>
+        <p>New : <%= wordsstats.new %></p>
+        <p>Number of good answers : <%= wordsstats.answered %></p>
+        <p>Number of bad answers : <%= wordsstats.failed %></p>
+        <p>Number of answers : <%= wordsstats.answered + wordsstats.failed %></p>
+    </div>
 
     <div id="block-add-word">
         <h3>Add a new word</h3>
