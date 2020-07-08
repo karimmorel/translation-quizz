@@ -37,7 +37,6 @@
     <form action="/response/<%= id %>/<%= language %>" method="get" class="form-add-translation" autocomplete="off"> 
         <% } %>
         <input type="text" name="response" id="response" value="<%= strGuess %>" autofocus>
-        <input type="checkbox" name="answerasked" id="answer-asked" style="display: none;"/>
         <br/>
         <input type="submit" id="submit-response">
         <br/>
@@ -85,9 +84,9 @@
 
     $('#submit-response').click(function(){
         <%if (limited == true) { %>
-        socket.emit('submit-answer-limited', {answer : $('#response').val(), id : id, language : language, boolanswerasked : $('#answer-asked').is(":checked"), numberofwords : <%= numberofwords %>});
+        socket.emit('submit-answer-limited', {answer : $('#response').val(), id : id, language : language, numberofwords : <%= numberofwords %>});
         <% } else { %>
-        socket.emit('submit-answer', {answer : $('#response').val(), id : id, language : language, boolanswerasked : $('#answer-asked').is(":checked")});
+        socket.emit('submit-answer', {answer : $('#response').val(), id : id, language : language});
             <% } %>
         $('#block-message').html('');
         return false;
@@ -112,7 +111,6 @@
     });
 
     socket.on('good-answer', function (data) {
-        $('#answer-asked').prop('checked', false);
 
         id = data.id;
         count = data.count;
