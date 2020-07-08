@@ -31,16 +31,32 @@
 <div id="block-message"><%if (strGuess) { %>Wrong answer<% } %></div>
 
 <div id="block-add-word">
+    <%if (limited == true) { %>
+    <form action="/response/<%= id %>/<%= language %>/<%= numberofwords %>" method="get" class="form-add-translation" autocomplete="off"> 
+        <% } else { %>
     <form action="/response/<%= id %>/<%= language %>" method="get" class="form-add-translation" autocomplete="off"> 
+        <% } %>
         <input type="text" name="response" id="response" value="<%= strGuess %>" autofocus>
         <input type="checkbox" name="answerasked" id="answer-asked" style="display: none;"/>
         <br/>
         <input type="submit" id="submit-response">
         <br/>
     </form>
-    <button id="button-ask-answer">
-        Demander la réponse
-    </button>
+
+    <%if (limited == true) { %>
+        <a href="/test/<%= language %>/<%= numberofwords%>/askforanswer" id="link-ask-answer">
+            <button id="button-ask-answer">
+                Demander la réponse
+            </button>
+            </a>
+        <% } else { %>
+            <a href="/test/<%= language %>/askforanswer" id="link-ask-answer">
+                <button id="button-ask-answer">
+                    Demander la réponse
+                </button>
+                </a>
+       <% } %>
+    
 </div>
 <div id="answers-container">
     <div id="answers-close">+</div>
@@ -48,7 +64,6 @@
         <li>Vide</li>
     </ul>
 </div>
-<div id="response-value" style="display: none;"><%= response %></div>
 
 <a href="/<%= language %>">Configurer le test</a>
 <%if (limited == true) { %>
@@ -148,10 +163,14 @@
         $('#answers-container').css({right:'-40%'});
     });
 
-    
-    $('#button-ask-answer').click(function(){
-        $('#response').val($('#response-value').html());
-        $('#answer-asked').prop('checked', true);
+    /* Ask for the answer - websocket with javascript, link without */
+    $('#link-ask-answer').click(function(e){
+        socket.emit('ask-for-answer', {'language' : language, 'id' : id, 'limited' : <%= limited %>});
+        e.preventDefault();
+    });
+
+    socket.on('get-the-answer', function(data) {
+        $('#response:text').val(data.answer);
     });
 
 </script>

@@ -39,8 +39,8 @@ app.use(function (req, res, next) {
         session.respondedids = [];
     }
     // Id of the actual word
-    if(!session.intActualId) {
-        session.intActualId = [];
+    if(!session.objActualWord) {
+        session.objActualWord = [];
     }
     // Response sent by the guesser
     if(!session.strActualGuess) {
@@ -76,8 +76,8 @@ app.use(function (req, res, next) {
     if(!session.respondedidsLimited) {
         session.respondedidsLimited = [];
     }
-    if(!session.intActualIdLimited) {
-        session.intActualIdLimited = [];
+    if(!session.objActualWordLimited) {
+        session.objActualWordLimited = [];
     }
     if(!session.wordsToGuessLimited) {
         session.wordsToGuessLimited = [];
@@ -101,7 +101,7 @@ app.use(function (req, res, next) {
     next()
   })
 
-  function setIdToSession(boolAddId, language, response, id, boolAnswerAsked, res, boolLimited = false) 
+  function setIdToSession(boolAddId, language, response, id, boolAnswerAsked, res, boolLimited = false, numberofwords = null) 
   {
       if(boolLimited == true)
       {
@@ -135,7 +135,14 @@ app.use(function (req, res, next) {
 
     if(res)
       {
-        res.redirect('/test/'+language);
+          if(boolLimited == true)
+          {
+            res.redirect('/test/'+language+'/'+numberofwords);
+          }
+          else
+          {
+            res.redirect('/test/'+language);
+          }
       }
 
       if(boolAddId)
@@ -182,14 +189,18 @@ app.use(function (req, res, next) {
               if(boolLimited == true)
               {
                 session.respondedidsLimited[language].push(id);
-                session.intActualIdLimited[language] = null;
+                session.objActualWordLimited[language]['id'] = null;
+                session.objActualWordLimited[language]['answer'] = null;
                 session.strActualGuessLimited[language] = null;
+                session.boolAskingForAnswerLimited[language] = false
               }
               else
               {
                 session.respondedids[language].push(id);
-                session.intActualId[language] = null;
+                session.objActualWord[language]['id'] = null;
+                session.objActualWord[language]['answer'] = null;
                 session.strActualGuess[language] = null;
+                session.boolAskingForAnswer[language] = false;
               }
           }
           return true;
@@ -218,13 +229,12 @@ app.use(function (req, res, next) {
             boolAddId = true;
         }
     
-            var boolReturn = callback(boolAddId, language, response, id, boolAnswerAsked, res, boolLimited);
+            var boolReturn = callback(boolAddId, language, response, id, boolAnswerAsked, res, boolLimited, numberofwords);
 
             if(res == null)
             {
             if(boolReturn == true)
-            {
-
+            {  
                 if(boolLimited == true)
                 {
                     newWordToGuessWithLimitedAmount(null, null, numberofwords, socket, language);
@@ -249,7 +259,6 @@ function newWordToGuess (res, req, socket = null, language = null) {
     let arrTranslationList = connection.query('SELECT * FROM translation WHERE active = 1 AND language_id = (SELECT id FROM language WHERE slug = \''+language+'\' LIMIT 1)', function (error, results, fields) {
         if (error) throw error;
 
-    var intActualId = session.intActualId[language];
 
     // Setting session vars
     if (session.respondedids[language] == null)
@@ -272,12 +281,22 @@ function newWordToGuess (res, req, socket = null, language = null) {
     {
         session.arrWrongAnswersList[language] = [];
     }
+    if (session.objActualWord[language] === undefined || "id" in session.objActualWord[language] === undefined)
+    {
+        session.objActualWord[language] = [];
+        session.objActualWord[language]['id'] = null;
+        session.objActualWord[language]['answer'] = null;
+    }
+
+    var objActualWord = session.objActualWord[language];
+
 
     // Get a random word
     var arrRandomList = [];
     for (var key in results)
     {
-        if (intActualId == null)
+
+        if (objActualWord['id'] == null)
         {
             var strResultId = results[key].id;
             var boolIfIncludes = session.respondedids[language].includes(strResultId);
@@ -288,7 +307,7 @@ function newWordToGuess (res, req, socket = null, language = null) {
         }
         else
         {
-            if (intActualId == results[key].id)
+            if (objActualWord['id'] == results[key].id)
             {
                 arrRandomList.push(results[key]);
             }
@@ -313,12 +332,13 @@ function newWordToGuess (res, req, socket = null, language = null) {
 
     if(arrWordToGuess)
     {
-        session.intActualId[language] = arrWordToGuess.id;
+        session.objActualWord[language]['id'] = arrWordToGuess.id;
+        session.objActualWord[language]['answer'] = arrWordToGuess.main_language_translation;
 
     // Render
     if(res && req)
     {
-        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.focused_language_translation, response : arrWordToGuess.main_language_translation, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : false, intCorrectAnswers : session.intCorrectAnswers[language], intWrongAnswers : session.intWrongAnswers[language], limited : false});
+        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.focused_language_translation, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : false, intCorrectAnswers : session.intCorrectAnswers[language], intWrongAnswers : session.intWrongAnswers[language], limited : false});
 
     }
     else
@@ -374,8 +394,14 @@ function newWordToGuessWithLimitedAmount (res, req, numberofwords, socket = null
     {
         session.arrWrongAnswersListLimited[language] = [];
     }   
+    if (session.objActualWordLimited[language] === undefined || "id" in session.objActualWordLimited[language] === undefined)
+    {
+        session.objActualWordLimited[language] = [];
+        session.objActualWordLimited[language]['id'] = null;
+        session.objActualWordLimited[language]['answer'] = null;
+    }
 
-    var intActualId = session.intActualIdLimited[language];
+    var objActualWord = session.objActualWordLimited[language];
     var strActualGuess = session.strActualGuessLimited[language];
     var wordsToGuess = session.wordsToGuessLimited[language];
     var respondedids = session.respondedidsLimited[language];
@@ -405,7 +431,7 @@ function newWordToGuessWithLimitedAmount (res, req, numberofwords, socket = null
     var arrRandomList = [];
     for (var key in results)
     {
-        if (intActualId == null)
+        if (objActualWord['id'] == null)
         {
             var strResultId = results[key].id;
             var boolIfIncludes = respondedids.includes(strResultId);
@@ -416,7 +442,7 @@ function newWordToGuessWithLimitedAmount (res, req, numberofwords, socket = null
         }
         else
         {
-            if (intActualId == results[key].id)
+            if (objActualWord['id'] == results[key].id)
             {
                 arrRandomList.push(results[key]);
             }
@@ -442,12 +468,13 @@ function newWordToGuessWithLimitedAmount (res, req, numberofwords, socket = null
 
     if(arrWordToGuess)
     {
-        session.intActualIdLimited[language] = arrWordToGuess.id;
+        session.objActualWordLimited[language]['id'] = arrWordToGuess.id;
+        session.objActualWordLimited[language]['answer'] = arrWordToGuess.main_language_translation;
 
     // Render
     if(res && req)
     {
-        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.focused_language_translation, response : arrWordToGuess.main_language_translation, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : true, numberofwords : numberofwords, intCorrectAnswers : session.intCorrectAnswersLimited[req.params.language], intWrongAnswers : session.intWrongAnswersLimited[req.params.language], limited : true});
+        res.render('test.ejs', {language : req.params.language, wordtoguess : arrWordToGuess.focused_language_translation, id : arrWordToGuess.id, arrFullCount : arrFullCount, arrRandomCount : arrRandomCount, strGuess : strActualGuess, limited : true, numberofwords : numberofwords, intCorrectAnswers : session.intCorrectAnswersLimited[req.params.language], intWrongAnswers : session.intWrongAnswersLimited[req.params.language], limited : true});
     }
     else
     {
@@ -565,11 +592,23 @@ app.get('/error', function(req, res){
     session.boolAskingForAnswerLimited[req.params.language] = true;
     res.redirect('/test/'+req.params.language+'/'+req.params.numberofwords);
 })
+.get('/response/:id/:language/:numberofwords', function(req, res){
+
+    if(req.query.response)
+    {
+        addIdToSessionOrNot(setIdToSession, req.params.language, req.query.response, parseInt(req.params.id), session.boolAskingForAnswerLimited[req.params.language], res, null, true, req.params.numberofwords);
+    }
+    else
+    {
+        res.redirect('/test/'+req.params.language+'/'+req.params.numberofwords);
+    }
+
+})
 .get('/response/:id/:language', function(req, res){
 
     if(req.query.response)
     {
-        addIdToSessionOrNot(setIdToSession, req.params.language, req.query.response, parseInt(req.params.id), req.query.answerasked, res);
+        addIdToSessionOrNot(setIdToSession, req.params.language, req.query.response, parseInt(req.params.id), session.boolAskingForAnswer[req.params.language], res);
     }
     else
     {
@@ -591,7 +630,7 @@ app.get('/error', function(req, res){
     res.setHeader('Content-Type', 'text/html');
     session.respondedidsLimited[req.params.language] = [];
     session.wordsToGuessLimited[req.params.language] = [];
-    session.intActualIdLimited[req.params.language] = null;
+    session.objActualWordLimited[req.params.language] = [id => null, answer => null];
     session.strActualGuessLimited[req.params.language] = null;
     session.intCorrectAnswersLimited[req.params.language] = 0;
     session.intWrongAnswersLimited[req.params.language] = 0;
@@ -625,7 +664,7 @@ app.get('/error', function(req, res){
 .get('/redo/:language/:numberofwords', function(req, res){
     res.setHeader('Content-Type', 'text/html');
     session.respondedidsLimited[req.params.language] = [];
-    session.intActualIdLimited[req.params.language] = null;
+    session.objActualWordLimited[req.params.language] = [id => null, answer => null];
     session.strActualGuessLimited[req.params.language] = null;
     session.intCorrectAnswersLimited[req.params.language] = 0;
     session.intWrongAnswersLimited[req.params.language] = 0;
@@ -731,7 +770,7 @@ io.on('connection', function (socket) {
         var strLanguage = data.language;
         var intId = data.id;
         var strAnswer = data.answer;
-        var boolAnswerAsked = data.boolanswerasked;
+        var boolAnswerAsked = session.boolAskingForAnswer[strLanguage];
 
         // Process with the answer sent
         addIdToSessionOrNot(setIdToSession, strLanguage, strAnswer, intId, boolAnswerAsked, null, socket);
@@ -744,7 +783,7 @@ io.on('connection', function (socket) {
         var strLanguage = data.language;
         var intId = data.id;
         var strAnswer = data.answer;
-        var boolAnswerAsked = data.boolanswerasked;
+        var boolAnswerAsked = session.boolAskingForAnswerLimited[strLanguage];
         var numberofwords = data.numberofwords;
 
         // Process with the answer sent
@@ -766,6 +805,20 @@ io.on('connection', function (socket) {
     socket.on('list-of-wrong-answers-limited', function (data) {
         socket.emit('show-answers-list', {list : session.arrWrongAnswersListLimited[data.language]});
     });
+
+    /* Asking for the answer */
+    socket.on('ask-for-answer', function (data) {
+        if(data.limited)
+        {
+            session.boolAskingForAnswerLimited[data.language] = true;
+            socket.emit('get-the-answer', {answer : session.objActualWordLimited[data.language]['answer']});
+        }
+        else
+        {
+            session.boolAskingForAnswer[data.language] = true;
+            socket.emit('get-the-answer', {answer : session.objActualWord[data.language]['answer']});
+        }
+    })
   });
 
   server.listen('8080');
