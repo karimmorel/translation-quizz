@@ -46,6 +46,9 @@ app.use(function (req, res, next) {
     if(!session.strActualGuess) {
         session.strActualGuess = [];
     }
+    if(!session.boolAskingForAnswer) {
+        session.boolAskingForAnswer = [];
+    }
     if(!session.intCorrectAnswers) {
         session.intCorrectAnswers = [];
     }
@@ -66,6 +69,9 @@ app.use(function (req, res, next) {
 
     if(!session.strActualGuessLimited) {
         session.strActualGuessLimited = [];
+    }
+    if(!session.boolAskingForAnswerLimited) {
+        session.boolAskingForAnswerLimited = [];
     }
     if(!session.respondedidsLimited) {
         session.respondedidsLimited = [];
@@ -244,7 +250,6 @@ function newWordToGuess (res, req, socket = null, language = null) {
         if (error) throw error;
 
     var intActualId = session.intActualId[language];
-    var strActualGuess = session.strActualGuess[language];
 
     // Setting session vars
     if (session.respondedids[language] == null)
@@ -292,6 +297,15 @@ function newWordToGuess (res, req, socket = null, language = null) {
     }
 
     var arrWordToGuess = arrRandomList[Math.floor(Math.random() * arrRandomList.length)];
+
+    /* If user asked for the answer */
+
+    if (session.boolAskingForAnswer[language] == true)
+    {
+        session.strActualGuess[language] =  arrWordToGuess.main_language_translation;
+    }
+
+    var strActualGuess = session.strActualGuess[language];
 
     // Compteur de mot côté vue
     var arrFullCount = results.length;
@@ -412,6 +426,16 @@ function newWordToGuessWithLimitedAmount (res, req, numberofwords, socket = null
 
     var arrWordToGuess = arrRandomList[Math.floor(Math.random() * arrRandomList.length)];
 
+    /* If user asked for the answer */
+
+    if (session.boolAskingForAnswerLimited[language] == true)
+    {
+        session.strActualGuessLimited[language] =  arrWordToGuess.main_language_translation;
+    }
+
+    var strActualGuess = session.strActualGuessLimited[language];
+
+
     // Compteur de mot côté vue
     var arrFullCount = results.length;
     var arrRandomCount = respondedids.length;
@@ -518,6 +542,12 @@ app.get('/error', function(req, res){
 
     newWordToGuess (res, req, null, req.params.language);
 })
+.get('/test/:language/askforanswer', function(req, res){
+
+    /* The user wants the answer */
+    session.boolAskingForAnswer[req.params.language] = true;
+    res.redirect('/test/'+req.params.language);
+})
 .get('/test/:language/:numberofwords', function(req, res){
     res.setHeader('Content-type', 'text/html');
     if(Number.isInteger(parseInt(req.params.numberofwords)))
@@ -528,6 +558,12 @@ app.get('/error', function(req, res){
     {
         res.redirect('/test/'+req.params.language+'/'+req.params.numberofwords);
     }
+})
+.get('/test/:language/:numberofwords/askforanswer', function(req, res){
+
+    /* The user wants the answer */
+    session.boolAskingForAnswerLimited[req.params.language] = true;
+    res.redirect('/test/'+req.params.language+'/'+req.params.numberofwords);
 })
 .get('/response/:id/:language', function(req, res){
 
@@ -638,7 +674,7 @@ app.get('/error', function(req, res){
                     results[0][word].class = "success";
                     wordsStats.success++;
                 }
-                else if (results[0][word].answered/(results[0][word].answered+results[0][word].failed)*100 <= 25 && results[0][word].answered+results[0][word].failed >=3) {
+                else if (results[0][word].answered/(results[0][word].answered+results[0][word].failed)*100 <= 30 && results[0][word].answered+results[0][word].failed >=3) {
                     results[0][word].class = "danger";
                     wordsStats.danger++;
                 }
