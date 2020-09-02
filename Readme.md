@@ -16,7 +16,9 @@ One of the most important thing I would need to do, would be to separate the beh
 ## Installation
 To install this application locally, you need to install <a href="https://nodejs.org/en/" target="_blank">node.js</a> on your system.<br/>
 You also need to have an access to a database. You configure it at the very beginning of the index.js file, by modifying the "connection" variable.<br/>
-I let you a copy of a database (database.sql) with no data you can copy directly in your database to use this application, there is only two tables for instance.
+I let you a copy of a database (database.sql) with no data you can copy directly in your database to use this application, there is only two tables for instance.<br/>
+Then when you have cloned this repository locally, you just need to launch this command in your copy of the project :<br/>
+<pre>node index</pre>
 
 ## Improvements
 I know the application is not complete yet, the most important thing now would be to create users and accounts to make it usable online. I created some issues on the gitlab project in order to improve it in the next weeks.<br/>
